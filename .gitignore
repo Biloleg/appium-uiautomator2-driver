@@ -1,0 +1,13 @@
+node_modules
+package-lock.json*
+build
+.idea/
+uiautomator2/
+*.log
+coverage
+.nyc_output/
+test-results.xml
+.DS_Store
+docs/reference/
+site/
+.vscode/

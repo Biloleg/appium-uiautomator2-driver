@@ -1,0 +1,44 @@
+import type {Browser} from 'webdriverio';
+import {APIDEMOS_CAPS} from '../../desired';
+import {initSession, deleteSession} from '../../helpers/session';
+import chai, {expect} from 'chai';
+import chaiAsPromised from 'chai-as-promised';
+
+chai.use(chaiAsPromised);
+
+describe('mobile', function () {
+  let driver: Browser;
+
+  before(async function () {
+    driver = await initSession(APIDEMOS_CAPS);
+  });
+  after(async function () {
+    await deleteSession();
+  });
+  describe('mobile:shell', function () {
+    it('should call execute command without proxy error, but require relaxed security flag', async function () {
+      try {
+        await driver.execute('mobile: shell', {command: 'echo', args: ['hello']});
+      } catch (e: any) {
+        expect(e.message).to.match(/Potentially insecure feature 'adb_shell' has not been enabled/);
+      }
+    });
+  });
+  describe('mobile:broadcast', function () {
+    it('should call broadcast', async function () {
+      const output = await driver.execute('mobile: broadcast', {
+        action: 'io.appium.settings.sms.read',
+        extras: [['s', 'max', '10']],
+      });
+      expect(output).to.include('result=-1');
+    });
+  });
+  describe('mobile:batteryInfo', function () {
+    it('should get battery info', async function () {
+      const {level, state} = await driver.execute('mobile: batteryInfo', {}) as {level: number; state: number};
+      expect(level).to.be.greaterThan(0.0);
+      expect(state).to.be.greaterThan(1);
+    });
+  });
+});
+
