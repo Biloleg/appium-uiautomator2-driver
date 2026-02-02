@@ -35,6 +35,9 @@ const UIAUTOMATOR2_CONSTRAINTS = {
   shouldTerminateApp: {
     isBoolean: true,
   },
+  pwaPackage: {
+    isString: true,
+  },
   ...commonCapConstraints,
 } as const satisfies Constraints;
 

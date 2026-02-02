@@ -660,7 +660,9 @@ class AndroidUiautomator2Driver
 
     // For Oculus Browser, use viewport dimensions from CDP as deviceScreenSize
     let deviceScreenSize = realDisplaySize;
-    if (this.opts.appPackage === 'com.oculus.browser' && viewportRect) {
+    if (this.opts.appPackage === 'com.oculus.browser' &&
+      viewportRect
+    ) {
       deviceScreenSize = `${viewportRect.width}x${viewportRect.height}`;
     }
 
@@ -874,7 +876,9 @@ class AndroidUiautomator2Driver
     }
 
     // Initialize CDP context manager for Oculus Browser
-    if (this.opts.appPackage === 'com.oculus.browser') {
+    if (
+      this.opts.appPackage === 'com.oculus.browser'
+    ) {
       this.log.info('[CDP] Initializing CDP context manager for Oculus Browser direct access');
       this.cdpContextManager = new CDPContextManager(this.adb!, this.adb.curDeviceId!, this.log);
 
@@ -889,7 +893,7 @@ class AndroidUiautomator2Driver
       while (attempts < maxAttempts) {
         try {
           contexts = await this.cdpContextManager.getContexts();
-          const webviewContext = contexts.find(c => c.startsWith('WEBVIEW_'));
+          const webviewContext = contexts.find((c) => c.startsWith('WEBVIEW_'));
 
           if (webviewContext) {
             this.log.info(`[CDP] Found webview context: ${webviewContext}`);
@@ -905,7 +909,9 @@ class AndroidUiautomator2Driver
                 const rect = await cdpClient.getWindowRect();
                 if (rect.width > 0 && rect.height > 0) {
                   this.cdpContextManager.updateCachedViewportDimensions(rect.width, rect.height);
-                  this.log.info(`[CDP] Cached initial viewport dimensions: ${rect.width}x${rect.height}`);
+                  this.log.info(
+                    `[CDP] Cached initial viewport dimensions: ${rect.width}x${rect.height}`,
+                  );
                 }
               }
             } catch (e) {
@@ -922,20 +928,24 @@ class AndroidUiautomator2Driver
 
           attempts++;
           if (attempts < maxAttempts) {
-            this.log.info(`[CDP] Webview not found yet, waiting ${delayMs}ms... (attempt ${attempts}/${maxAttempts})`);
-            await new Promise(resolve => setTimeout(resolve, delayMs));
+            this.log.info(
+              `[CDP] Webview not found yet, waiting ${delayMs}ms... (attempt ${attempts}/${maxAttempts})`,
+            );
+            await new Promise((resolve) => setTimeout(resolve, delayMs));
           }
         } catch (e) {
           this.log.warn(`[CDP] Context discovery attempt ${attempts + 1} failed: ${e.message}`);
           attempts++;
           if (attempts < maxAttempts) {
-            await new Promise(resolve => setTimeout(resolve, delayMs));
+            await new Promise((resolve) => setTimeout(resolve, delayMs));
           }
         }
       }
 
-      if (!contexts.find(c => c.startsWith('WEBVIEW_'))) {
-        this.log.warn('[CDP] Could not find webview context after initialization. CDP features may not work properly.');
+      if (!contexts.find((c) => c.startsWith('WEBVIEW_'))) {
+        this.log.warn(
+          '[CDP] Could not find webview context after initialization. CDP features may not work properly.',
+        );
       }
     }
 
@@ -1121,21 +1131,57 @@ class AndroidUiautomator2Driver
       );
       return;
     }
-    await this.adb!.startApp({
-      pkg: this.opts.appPackage!,
-      activity: this.opts.appActivity,
-      action: this.opts.intentAction || 'android.intent.action.MAIN',
-      category: this.opts.intentCategory || 'android.intent.category.LAUNCHER',
-      flags: this.opts.intentFlags || '0x10200000', // FLAG_ACTIVITY_NEW_TASK | FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
-      waitPkg: this.opts.appWaitPackage,
-      waitActivity: this.opts.appWaitActivity,
-      waitForLaunch: this.opts.appWaitForLaunch,
-      waitDuration: this.opts.appWaitDuration,
-      optionalIntentArguments: this.opts.optionalIntentArguments,
-      stopApp: this.opts.forceAppLaunch || !this.opts.dontStopAppOnReset,
-      retry: true,
-      user: this.opts.userProfile,
-    });
+
+    // Check if pwaPackage is provided for Oculus PWA launch
+    if (this.opts.pwaPackage) {
+      this.log.info(`Launching Oculus PWA with package: ${this.opts.pwaPackage}`);
+
+      // Stop app if needed
+      if (this.opts.forceAppLaunch || !this.opts.dontStopAppOnReset) {
+        await this.adb!.forceStop(this.opts.appPackage!);
+      }
+
+      // Execute custom Oculus Browser PWA launch command
+      const pwaUrl = `ovrweb://pwa?packageName=${this.opts.pwaPackage}`;
+      await this.adb!.shell([
+        'am',
+        'start',
+        '-n',
+        'com.oculus.browser/.ShortcutPanelActivity',
+        '-a',
+        'android.intent.action.VIEW',
+        '-c',
+        'com.oculus.intent.category.VR_HOME_LAUNCHER',
+        '-d',
+        pwaUrl
+      ])
+
+      // Wait for the app to launch using appPackage and appActivity
+      if (!this.opts.pwaPackage && appWaitPackage && appWaitActivity) {
+        const waitDuration = this.opts.appWaitDuration || 20000;
+        this.log.info(
+          `Waiting up to ${waitDuration}ms for '${appWaitPackage}/${appWaitActivity}' to start`,
+        );
+        await this.adb!.waitForActivity(appWaitPackage, appWaitActivity, waitDuration);
+      }
+    } else {
+      // Standard app launch
+      await this.adb!.startApp({
+        pkg: this.opts.appPackage!,
+        activity: this.opts.appActivity,
+        action: this.opts.intentAction || 'android.intent.action.MAIN',
+        category: this.opts.intentCategory || 'android.intent.category.LAUNCHER',
+        flags: this.opts.intentFlags || '0x10200000', // FLAG_ACTIVITY_NEW_TASK | FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
+        waitPkg: this.opts.appWaitPackage,
+        waitActivity: this.opts.appWaitActivity,
+        waitForLaunch: this.opts.appWaitForLaunch,
+        waitDuration: this.opts.appWaitDuration,
+        optionalIntentArguments: this.opts.optionalIntentArguments,
+        stopApp: this.opts.forceAppLaunch || !this.opts.dontStopAppOnReset,
+        retry: true,
+        user: this.opts.userProfile,
+      });
+    }
   }
 
   async deleteSession() {
