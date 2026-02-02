@@ -993,7 +993,14 @@ class AndroidUiautomator2Driver
 
     const deviceInfo = await deviceInfoPromise;
 
-    return { ...capsWithSessionInfo, ...deviceInfo };
+    // Include current context in capabilities so Inspector knows which mode we're in
+    const currentContext = await this.getCurrentContext();
+
+    return {
+      ...capsWithSessionInfo,
+      ...deviceInfo,
+      ...(currentContext !== 'NATIVE_APP' ? { currentContext } : {})
+    };
   }
 
   async initUiAutomator2Server() {
