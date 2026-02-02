@@ -317,10 +317,12 @@ export class CDPClient {
             const attrMap: any = {};
             for (let i = 0; i < attributes.length; i += 2) {
                 const attrName = attributes[i];
-                // Skip elementId attribute from the DOM as we generate our own
-                if (attrName !== 'elementId') {
-                    attrMap[attrName] = attributes[i + 1] || '';
+                // Skip any elementId-related attributes from the DOM as we generate our own
+                // This includes elementId, elementid, data-element-id, etc.
+                if (!attrName || attrName.toLowerCase().includes('elementid')) {
+                    continue;
                 }
+                attrMap[attrName] = attributes[i + 1] || '';
             }
 
             const className = attrMap.class || '';
@@ -363,7 +365,6 @@ export class CDPClient {
             const xmlAttrs = [
                 `class="${className}"`,
                 `resource-id="${id}"`,
-                `elementId="${elementId}"`,
                 `text="${text}"`,
                 `content-desc="${ariaLabel}"`,
                 `checkable="${type === 'checkbox' || type === 'radio'}"`,
@@ -412,8 +413,7 @@ export class CDPClient {
         }
 
         const bodyXml = await buildNode(bodyNode);
-        const cleanedBodyXml = bodyXml.replace(/\s+elementId=""/g, '');
-        return `<?xml version='1.0' encoding='UTF-8' standalone='yes' ?>\n<hierarchy rotation="0">\n${cleanedBodyXml}\n</hierarchy>`;
+        return `<?xml version='1.0' encoding='UTF-8' standalone='yes' ?>\n<hierarchy rotation="0">\n${bodyXml}\n</hierarchy>`;
     }
 
     /**
@@ -511,6 +511,17 @@ export class CDPClient {
             translatedSelector = translatedSelector.replace(
                 /@content-desc\s*=\s*'([^']*)'/g,
                 "(@aria-label='$1' or @title='$1')"
+            );
+
+            // For text attribute (Android-specific), convert to text() function (web standard)
+            // Convert [@text="value"] to [normalize-space(text())="value"]
+            translatedSelector = translatedSelector.replace(
+                /@text\s*=\s*"([^"]*)"/g,
+                'normalize-space(text())="$1"'
+            );
+            translatedSelector = translatedSelector.replace(
+                /@text\s*=\s*'([^']*)'/g,
+                "normalize-space(text())='$1'"
             );
 
             this.logger.info(`[CDP] Original XPath: ${selector}`);
