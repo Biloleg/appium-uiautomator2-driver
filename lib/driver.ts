@@ -1092,7 +1092,12 @@ class AndroidUiautomator2Driver
         if (!this.opts.skipUninstall) {
           await this.adb!.uninstallApk(this.opts.appPackage!);
         }
-        await this.installAUT();
+        if (this.opts.pwaPackage && this.opts.app) {
+          await this.adb.uninstallApk(this.opts.pwaPackage);
+          await this.adb.install(this.opts.app);
+        } else {
+          await this.installAUT();
+        }
       } else {
         this.log.debug(
           'noReset has been requested and the app is already installed. Doing nothing'
@@ -1155,6 +1160,21 @@ class AndroidUiautomator2Driver
         '-d',
         pwaUrl
       ])
+
+      await this.adb.forceStop(this.opts.appPackage!);
+
+      await this.adb!.shell([
+        'am',
+        'start',
+        '-n',
+        'com.oculus.browser/.ShortcutPanelActivity',
+        '-a',
+        'android.intent.action.VIEW',
+        '-c',
+        'com.oculus.intent.category.VR_HOME_LAUNCHER',
+        '-d',
+        pwaUrl,
+      ]);
 
       // Wait for the app to launch using appPackage and appActivity
       if (!this.opts.pwaPackage && appWaitPackage && appWaitActivity) {
