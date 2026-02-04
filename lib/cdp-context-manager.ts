@@ -60,10 +60,16 @@ export class CDPContextManager {
             }
 
             if (socketToUse) {
-                const contextName = 'WEBVIEW_com.oculus.browser';
-                contexts.push(contextName);
-                this.availableContextSockets.set(contextName, socketToUse);
-                this.logger.info(`[CDP] Mapped socket '${socketToUse}' to context '${contextName}'`);
+                const contextNames = socketToUse === 'chrome_devtools_remote'
+                    ? ['WEBVIEW_com.oculus.browser', 'WEBVIEW_chrome']
+                    : ['WEBVIEW_com.oculus.browser'];
+                for (const contextName of contextNames) {
+                    if (!contexts.includes(contextName)) {
+                        contexts.push(contextName);
+                    }
+                    this.availableContextSockets.set(contextName, socketToUse);
+                    this.logger.info(`[CDP] Mapped socket '${socketToUse}' to context '${contextName}'`);
+                }
             }
         } catch (error) {
             this.logger.error(`[CDP] Failed to get contexts: ${error}`);
@@ -113,28 +119,35 @@ export class CDPContextManager {
         }
 
         // Check if context exists
+        let targetContextName = contextName;
         const availableContexts = await this.getContexts();
-        if (!availableContexts.includes(contextName)) {
-            throw new Error(`Context '${contextName}' not found. Available contexts: ${availableContexts.join(', ')}`);
+        if (!availableContexts.includes(targetContextName)) {
+            const webviewContexts = availableContexts.filter((name) => name.startsWith('WEBVIEW_'));
+            if (targetContextName.startsWith('WEBVIEW_') && webviewContexts.length === 1) {
+                this.logger.warn(`[CDP] Requested context '${targetContextName}' not found; using '${webviewContexts[0]}'`);
+                targetContextName = webviewContexts[0];
+            } else {
+                throw new Error(`Context '${targetContextName}' not found. Available contexts: ${availableContexts.join(', ')}`);
+            }
         }
 
         // Connect to webview if not already connected or if connection is dead
-        const existingContext = this.contexts.get(contextName);
+        const existingContext = this.contexts.get(targetContextName);
         this.logger.info(`[CDP] Existing context check: exists=${!!existingContext}, connected=${existingContext?.cdpClient?.isConnected()}`);
 
         if (!existingContext) {
             // No existing context, create new one
-            await this._connectToWebView(contextName);
+            await this._connectToWebView(targetContextName);
         } else if (!existingContext.cdpClient?.isConnected()) {
             // Connection is dead, reconnect without clearing cache
             this.logger.info(`[CDP] Existing connection is dead, reconnecting...`);
-            await this._reconnectToWebView(contextName, existingContext);
+            await this._reconnectToWebView(targetContextName, existingContext);
         } else {
             this.logger.info(`[CDP] Reusing existing connection`);
         }
 
-        this.currentContext = contextName;
-        this.logger.info(`[CDP] Switched to context: ${contextName}`);
+        this.currentContext = targetContextName;
+        this.logger.info(`[CDP] Switched to context: ${targetContextName}`);
     }
 
     /**
