@@ -180,8 +180,8 @@ export class CDPContextManager {
                     throw new Error('No CDP pages found');
                 }
 
-                // Use first page
-                const page = pages[0];
+                // Select the best page (prioritize real web pages over internal Chrome pages)
+                const page = this._selectBestPage(pages);
                 this.logger.info(`[CDP] Reconnecting to page: ${page.title} (${page.url})`);
 
                 // Reconnect existing CDPClient to preserve element cache
@@ -200,6 +200,47 @@ export class CDPContextManager {
         } catch (error) {
             throw error;
         }
+    }
+
+    /**
+     * Filter and select the best page from available CDP pages
+     * Prioritizes actual web pages over internal Chrome pages
+     */
+    private _selectBestPage(pages: CDPPage[]): CDPPage {
+        // Filter out internal Chrome pages
+        const internalPagePrefixes = [
+            'chrome://',
+            'chrome-devtools://',
+            'about:',
+            'data:',
+        ];
+
+        // Separate pages into real pages and internal pages
+        const realPages = pages.filter(page =>
+            !internalPagePrefixes.some(prefix => page.url.startsWith(prefix))
+        );
+
+        const internalPages = pages.filter(page =>
+            internalPagePrefixes.some(prefix => page.url.startsWith(prefix))
+        );
+
+        this.logger.info(`[CDP] Found ${realPages.length} real page(s) and ${internalPages.length} internal page(s)`);
+
+        // Log all pages for debugging
+        pages.forEach((page, index) => {
+            this.logger.debug(`[CDP] Page ${index}: ${page.title} - ${page.url}`);
+        });
+
+        // Prefer real pages
+        if (realPages.length > 0) {
+            const selectedPage = realPages[0];
+            this.logger.info(`[CDP] Selected real page: ${selectedPage.title} (${selectedPage.url})`);
+            return selectedPage;
+        }
+
+        // Fallback to first page if no real pages found
+        this.logger.warn(`[CDP] No real pages found, falling back to first page: ${pages[0].title} (${pages[0].url})`);
+        return pages[0];
     }
 
     /**
@@ -232,8 +273,8 @@ export class CDPContextManager {
                 throw new Error('No CDP pages found');
             }
 
-            // Use first page
-            const page = pages[0];
+            // Select the best page (prioritize real web pages over internal Chrome pages)
+            const page = this._selectBestPage(pages);
             this.logger.info(`[CDP] Connecting to page: ${page.title} (${page.url})`);
 
             // Create CDP client
