@@ -10,22 +10,22 @@ import type {
   StringRecord,
   SessionCapabilities,
 } from '@appium/types';
-import { DEFAULT_ADB_PORT } from 'appium-adb';
-import { AndroidDriver, utils } from 'appium-android-driver';
-import { SETTINGS_HELPER_ID } from 'io.appium.settings';
-import { BaseDriver, DeviceSettings } from 'appium/driver';
-import { fs, mjpeg, util } from 'appium/support';
-import { retryInterval } from 'asyncbox';
+import {DEFAULT_ADB_PORT} from 'appium-adb';
+import {AndroidDriver, utils} from 'appium-android-driver';
+import {SETTINGS_HELPER_ID} from 'io.appium.settings';
+import {BaseDriver, DeviceSettings} from 'appium/driver';
+import {fs, mjpeg, util} from 'appium/support';
+import {retryInterval} from 'asyncbox';
 import B from 'bluebird';
 import _ from 'lodash';
 import os from 'node:os';
 import path from 'node:path';
-import { checkPortStatus, findAPortNotInUse } from 'portscanner';
-import type { ExecError } from 'teen_process';
-import UIAUTOMATOR2_CONSTRAINTS, { type Uiautomator2Constraints } from './constraints';
-import { APKS_EXTENSION, APK_EXTENSION } from './extensions';
-import { newMethodMap } from './method-map';
-import { signApp } from './helpers';
+import {checkPortStatus, findAPortNotInUse} from 'portscanner';
+import type {ExecError} from 'teen_process';
+import UIAUTOMATOR2_CONSTRAINTS, {type Uiautomator2Constraints} from './constraints';
+import {APKS_EXTENSION, APK_EXTENSION} from './extensions';
+import {newMethodMap} from './method-map';
+import {signApp} from './helpers';
 import type {
   Uiautomator2Settings,
   Uiautomator2DeviceDetails,
@@ -37,9 +37,9 @@ import type {
   W3CUiautomator2DriverCaps,
   EmptyObject,
 } from './types';
-import { SERVER_PACKAGE_ID, SERVER_TEST_PACKAGE_ID, UiAutomator2Server } from './uiautomator2';
-import type { UiAutomator2ServerOptions } from './uiautomator2';
-import { CDPContextManager } from './cdp-context-manager';
+import {SERVER_PACKAGE_ID, SERVER_TEST_PACKAGE_ID, UiAutomator2Server} from './uiautomator2';
+import type {UiAutomator2ServerOptions} from './uiautomator2';
+import {CDPContextManager} from './cdp-context-manager';
 import {
   mobileGetActionHistory,
   mobileScheduleAction,
@@ -54,16 +54,9 @@ import {
   postAcceptAlert,
   postDismissAlert,
 } from './commands/alert';
-import {
-  mobileInstallMultipleApks,
-} from './commands/app-management';
-import {
-  mobileGetBatteryInfo,
-} from './commands/battery';
-import {
-  getClipboard,
-  setClipboard,
-} from './commands/clipboard';
+import {mobileInstallMultipleApks} from './commands/app-management';
+import {mobileGetBatteryInfo} from './commands/battery';
+import {getClipboard, setClipboard} from './commands/clipboard';
 import {
   active,
   getAttribute,
@@ -82,9 +75,7 @@ import {
   clear,
   mobileReplaceElementValue,
 } from './commands/element';
-import {
-  doFindElementOrEls,
-} from './commands/find';
+import {doFindElementOrEls} from './commands/find';
 import {
   mobileClickGesture,
   mobileDoubleClickGesture,
@@ -115,15 +106,8 @@ import {
   mobileGetDeviceInfo,
   mobileResetAccessibilityCache,
 } from './commands/misc';
-import {
-  mobileListWindows,
-  mobileListDisplays,
-} from './commands/windows';
-import {
-  setUrl,
-  mobileDeepLink,
-  back,
-} from './commands/navigation';
+import {mobileListWindows, mobileListDisplays} from './commands/windows';
+import {setUrl, mobileDeepLink, back} from './commands/navigation';
 import {
   mobileScreenshots,
   mobileViewportScreenshot,
@@ -139,7 +123,7 @@ import {
   getWindowSize,
   mobileViewPortRect,
 } from './commands/viewport';
-import { executeMethodMap } from './execute-method-map';
+import {executeMethodMap} from './execute-method-map';
 
 // The range of ports we can use on the system for communicating to the
 // UiAutomator2 HTTP server on the device
@@ -149,7 +133,7 @@ const DEVICE_PORT_RANGE = [8200, 8299];
 // parallel driver sessions
 const DEVICE_PORT_ALLOCATION_GUARD = util.getLockFileGuard(
   path.resolve(os.tmpdir(), 'uia2_device_port_guard'),
-  { timeout: 25, tryRecovery: true }
+  {timeout: 25, tryRecovery: true},
 );
 
 // This is the port that UiAutomator2 listens to on the device. We will forward
@@ -268,12 +252,8 @@ const MEMOIZED_FUNCTIONS = ['getStatusBarHeight', 'getDevicePixelRatio'] as cons
 
 class AndroidUiautomator2Driver
   extends AndroidDriver
-  implements
-  ExternalDriver<
-    Uiautomator2Constraints,
-    string,
-    StringRecord
-  > {
+  implements ExternalDriver<Uiautomator2Constraints, string, StringRecord>
+{
   static newMethodMap = newMethodMap;
   static executeMethodMap = executeMethodMap;
 
@@ -314,8 +294,8 @@ class AndroidUiautomator2Driver
     this._originalIme = null;
 
     this.settings = new DeviceSettings(
-      { ignoreUnimportantViews: false, allowInvisibleElements: false },
-      this.onSettingsUpdate.bind(this)
+      {ignoreUnimportantViews: false, allowInvisibleElements: false},
+      this.onSettingsUpdate.bind(this),
     );
     // handle webview mechanics from AndroidDriver
     this.sessionChromedrivers = {};
@@ -445,7 +425,7 @@ class AndroidUiautomator2Driver
         const cdpClient = this.cdpContextManager.getCurrentCDPClient();
         if (cdpClient) {
           const rect = await cdpClient.getWindowRect();
-          return { width: rect.width, height: rect.height };
+          return {width: rect.width, height: rect.height};
         }
       }
       return await originalGetWindowSize();
@@ -465,7 +445,7 @@ class AndroidUiautomator2Driver
             left: 0,
             top: 0,
             width: rect.width,
-            height: rect.height
+            height: rect.height,
           };
         }
       }
@@ -556,7 +536,7 @@ class AndroidUiautomator2Driver
     w3cCaps1: W3CUiautomator2DriverCaps,
     w3cCaps2?: W3CUiautomator2DriverCaps,
     w3cCaps3?: W3CUiautomator2DriverCaps,
-    driverData?: DriverData[]
+    driverData?: DriverData[],
   ): Promise<any> {
     try {
       // TODO handle otherSessionData for multiple sessions
@@ -565,7 +545,7 @@ class AndroidUiautomator2Driver
         w3cCaps1,
         w3cCaps2,
         w3cCaps3,
-        driverData
+        driverData,
       )) as DefaultCreateSessionResult<Uiautomator2Constraints>;
 
       const startSessionOpts: Uiautomator2StartSessionOpts = {
@@ -591,7 +571,7 @@ class AndroidUiautomator2Driver
 
       this.opts.adbPort = this.opts.adbPort || DEFAULT_ADB_PORT;
       // get device udid for this session
-      const { udid, emPort } = await this.getDeviceInfoFromCaps();
+      const {udid, emPort} = await this.getDeviceInfoFromCaps();
       this.opts.udid = udid;
       // @ts-expect-error do not put random stuff on opts
       this.opts.emPort = emPort;
@@ -601,12 +581,14 @@ class AndroidUiautomator2Driver
 
       if (this.isChromeSession) {
         this.log.info(`We're going to run a Chrome-based session`);
-        const { pkg, activity: defaultActivity } = utils.getChromePkg(this.opts.browserName!);
+        const {pkg, activity: defaultActivity} = utils.getChromePkg(this.opts.browserName!);
         let activity: string = defaultActivity;
         try {
           activity = await this.adb.resolveLaunchableActivity(pkg);
         } catch (e) {
-          this.log.warn(`Using the default ${pkg} activity ${activity}. Original error: ${e.message}`);
+          this.log.warn(
+            `Using the default ${pkg} activity ${activity}. Original error: ${e.message}`,
+          );
         }
         this.opts.appPackage = this.caps.appPackage = pkg;
         this.opts.appActivity = this.caps.appActivity = activity;
@@ -627,7 +609,7 @@ class AndroidUiautomator2Driver
       } else {
         this.log.info(
           `Neither 'app' nor 'appPackage' was set. Starting UiAutomator2 ` +
-          'without the target application'
+            'without the target application',
         );
       }
 
@@ -650,7 +632,7 @@ class AndroidUiautomator2Driver
       pixelRatio,
       statBarHeight,
       viewportRect,
-      { apiVersion, platformVersion, manufacturer, model, realDisplaySize, displayDensity },
+      {apiVersion, platformVersion, manufacturer, model, realDisplaySize, displayDensity},
     ] = await B.all([
       this.getDevicePixelRatio(),
       this.getStatusBarHeight(),
@@ -660,9 +642,7 @@ class AndroidUiautomator2Driver
 
     // For Oculus Browser, use viewport dimensions from CDP as deviceScreenSize
     let deviceScreenSize = realDisplaySize;
-    if (this.opts.appPackage === 'com.oculus.browser' &&
-      viewportRect
-    ) {
+    if (this.opts.appPackage === 'com.oculus.browser' && viewportRect) {
       deviceScreenSize = `${viewportRect.width}x${viewportRect.height}`;
     }
 
@@ -688,20 +668,20 @@ class AndroidUiautomator2Driver
     const sessionData = await BaseDriver.prototype.getSession.call(this);
     this.log.debug('Getting session details from server to mix in');
     const uia2Data = (await this.uiautomator2!.jwproxy.command('/', 'GET', {})) as any;
-    return { ...sessionData, ...uia2Data };
+    return {...sessionData, ...uia2Data};
   }
 
   async allocateSystemPort() {
     const forwardPort = async (localPort: number) => {
       this.log.debug(
-        `Forwarding UiAutomator2 Server port ${DEVICE_PORT} to local port ${localPort}`
+        `Forwarding UiAutomator2 Server port ${DEVICE_PORT} to local port ${localPort}`,
       );
       if ((await checkPortStatus(localPort, LOCALHOST_IP4)) === 'open') {
         throw this.log.errorWithException(
           `UiAutomator2 Server cannot start because the local port #${localPort} is busy. ` +
-          `Make sure the port you provide via 'systemPort' capability is not occupied. ` +
-          `This situation might often be a result of an inaccurate sessions management, e.g. ` +
-          `old automation sessions on the same device must always be closed before starting new ones.`
+            `Make sure the port you provide via 'systemPort' capability is not occupied. ` +
+            `This situation might often be a result of an inaccurate sessions management, e.g. ` +
+            `old automation sessions on the same device must always be closed before starting new ones.`,
         );
       }
       await this.adb!.forwardPort(localPort, DEVICE_PORT);
@@ -719,9 +699,9 @@ class AndroidUiautomator2Driver
       } catch {
         throw this.log.errorWithException(
           `Cannot find any free port in range ${startPort}..${endPort}}. ` +
-          `Please set the available port number by providing the systemPort capability or ` +
-          `double check the processes that are locking ports within this range and terminate ` +
-          `these which are not needed anymore`
+            `Please set the available port number by providing the systemPort capability or ` +
+            `double check the processes that are locking ports within this range and terminate ` +
+            `these which are not needed anymore`,
         );
       }
       await forwardPort(this.systemPort);
@@ -739,7 +719,7 @@ class AndroidUiautomator2Driver
       await this.adb.removePortForward(this.systemPort);
     } else {
       await DEVICE_PORT_ALLOCATION_GUARD(
-        async () => await this.adb!.removePortForward(this.systemPort!)
+        async () => await this.adb!.removePortForward(this.systemPort!),
       );
     }
   }
@@ -748,7 +728,7 @@ class AndroidUiautomator2Driver
     if (this.opts.mjpegServerPort) {
       this.log.debug(
         `MJPEG broadcasting requested, forwarding MJPEG server port ${MJPEG_SERVER_DEVICE_PORT} ` +
-        `to local port ${this.opts.mjpegServerPort}`
+          `to local port ${this.opts.mjpegServerPort}`,
       );
       await this.adb!.forwardPort(this.opts.mjpegServerPort, MJPEG_SERVER_DEVICE_PORT);
     }
@@ -769,46 +749,54 @@ class AndroidUiautomator2Driver
     const preflightPromises: Promise<any>[] = [];
     if (apiLevel >= 28) {
       // Android P
-      preflightPromises.push((async () => {
-        this.log.info('Relaxing hidden api policy');
-        try {
-          await this.adb.setHiddenApiPolicy('1', !!this.opts.ignoreHiddenApiPolicyError);
-        } catch (err) {
-          throw this.log.errorWithException(
-            'Hidden API policy (https://developer.android.com/guide/app-compatibility/restrictions-non-sdk-interfaces) cannot be enabled. ' +
-            'This might be happening because the device under test is not configured properly. ' +
-            'Please check https://github.com/appium/appium/issues/13802 for more details. ' +
-            'You could also set the "appium:ignoreHiddenApiPolicyError" capability to true in order to ' +
-            'ignore this error, which might later lead to unexpected crashes or behavior of ' +
-            `the automation server. Original error: ${err.message}`
-          );
-        }
-      })());
+      preflightPromises.push(
+        (async () => {
+          this.log.info('Relaxing hidden api policy');
+          try {
+            await this.adb.setHiddenApiPolicy('1', !!this.opts.ignoreHiddenApiPolicyError);
+          } catch (err) {
+            throw this.log.errorWithException(
+              'Hidden API policy (https://developer.android.com/guide/app-compatibility/restrictions-non-sdk-interfaces) cannot be enabled. ' +
+                'This might be happening because the device under test is not configured properly. ' +
+                'Please check https://github.com/appium/appium/issues/13802 for more details. ' +
+                'You could also set the "appium:ignoreHiddenApiPolicyError" capability to true in order to ' +
+                'ignore this error, which might later lead to unexpected crashes or behavior of ' +
+                `the automation server. Original error: ${err.message}`,
+            );
+          }
+        })(),
+      );
     }
     if (util.hasValue(this.opts.gpsEnabled)) {
-      preflightPromises.push((async () => {
-        this.log.info(
-          `Trying to ${this.opts.gpsEnabled ? 'enable' : 'disable'} gps location provider`
-        );
-        await this.adb.toggleGPSLocationProvider(Boolean(this.opts.gpsEnabled));
-      })());
+      preflightPromises.push(
+        (async () => {
+          this.log.info(
+            `Trying to ${this.opts.gpsEnabled ? 'enable' : 'disable'} gps location provider`,
+          );
+          await this.adb.toggleGPSLocationProvider(Boolean(this.opts.gpsEnabled));
+        })(),
+      );
     }
     if (this.opts.hideKeyboard) {
-      preflightPromises.push((async () => {
-        this._originalIme = await this.adb.defaultIME();
-      })());
+      preflightPromises.push(
+        (async () => {
+          this._originalIme = await this.adb.defaultIME();
+        })(),
+      );
     }
     let appInfo;
-    preflightPromises.push((async () => {
-      // get appPackage et al from manifest if necessary
-      appInfo = await this.getLaunchInfo();
-    })());
+    preflightPromises.push(
+      (async () => {
+        // get appPackage et al from manifest if necessary
+        appInfo = await this.getLaunchInfo();
+      })(),
+    );
     // start settings app, set the language/locale, start logcat etc...
     preflightPromises.push(this.initDevice());
 
     await B.all(preflightPromises);
 
-    this.opts = { ...this.opts, ...(appInfo ?? {}) };
+    this.opts = {...this.opts, ...(appInfo ?? {})};
     return appInfo;
   }
 
@@ -822,12 +810,12 @@ class AndroidUiautomator2Driver
       this.allocateMjpegServerPort(),
     ]);
 
-    const [uiautomator2,] = await B.all([
+    const [uiautomator2] = await B.all([
       // set up the modified UiAutomator2 server etc
       this.initUiAutomator2Server(),
       (async () => {
         // Should be after installing io.appium.settings
-        if (this.opts.disableWindowAnimation && await this.adb.getApiLevel() < 26) {
+        if (this.opts.disableWindowAnimation && (await this.adb.getApiLevel()) < 26) {
           // API level 26 is Android 8.0.
           // Granting android.permission.SET_ANIMATION_SCALE is necessary to handle animations under API level 26
           // Read https://github.com/appium/appium/pull/11640#issuecomment-438260477
@@ -876,9 +864,7 @@ class AndroidUiautomator2Driver
     }
 
     // Initialize CDP context manager for Oculus Browser
-    if (
-      this.opts.appPackage === 'com.oculus.browser'
-    ) {
+    if (this.opts.appPackage === 'com.oculus.browser') {
       this.log.info('[CDP] Initializing CDP context manager for Oculus Browser direct access');
       this.cdpContextManager = new CDPContextManager(this.adb!, this.adb.curDeviceId!, this.log);
 
@@ -959,13 +945,13 @@ class AndroidUiautomator2Driver
     }
 
     // We would like to notify about the initial context setting
-    if (await this.getCurrentContext() === this.defaultContextName()) {
+    if ((await this.getCurrentContext()) === this.defaultContextName()) {
       await this.notifyBiDiContextChange();
     }
   }
 
   async startUiAutomator2Session(
-    caps: Uiautomator2StartSessionOpts
+    caps: Uiautomator2StartSessionOpts,
   ): Promise<Uiautomator2SessionCaps> {
     const appInfo = await this.performSessionPreExecSetup();
     // set actual device name, udid, platform version, screen size, screen density, model and manufacturer details
@@ -1009,7 +995,7 @@ class AndroidUiautomator2Driver
     return {
       ...capsWithSessionInfo,
       ...deviceInfo,
-      ...(currentContext !== 'NATIVE_APP' ? { currentContext } : {})
+      ...(currentContext !== 'NATIVE_APP' ? {currentContext} : {}),
     };
   }
 
@@ -1037,13 +1023,13 @@ class AndroidUiautomator2Driver
         await this.adb!.addToDeviceIdleWhitelist(
           SETTINGS_HELPER_ID,
           SERVER_PACKAGE_ID,
-          SERVER_TEST_PACKAGE_ID
+          SERVER_TEST_PACKAGE_ID,
         );
       } catch (e) {
         const err = e as ExecError;
         this.log.warn(
           `Cannot add server packages to the Doze whitelist. Original error: ` +
-          (err.stderr || err.message)
+            (err.stderr || err.message),
         );
       }
     }
@@ -1054,10 +1040,11 @@ class AndroidUiautomator2Driver
   async initAUT() {
     // Uninstall any uninstallOtherPackages which were specified in caps
     if (this.opts.uninstallOtherPackages) {
-      await this.uninstallOtherPackages(
-        utils.parseArray(this.opts.uninstallOtherPackages),
-        [SETTINGS_HELPER_ID, SERVER_PACKAGE_ID, SERVER_TEST_PACKAGE_ID]
-      );
+      await this.uninstallOtherPackages(utils.parseArray(this.opts.uninstallOtherPackages), [
+        SETTINGS_HELPER_ID,
+        SERVER_PACKAGE_ID,
+        SERVER_TEST_PACKAGE_ID,
+      ]);
     }
 
     // Install any "otherApps" that were specified in caps
@@ -1067,11 +1054,11 @@ class AndroidUiautomator2Driver
         otherApps = utils.parseArray(this.opts.otherApps);
       } catch (e) {
         throw this.log.errorWithException(
-          `Could not parse "otherApps" capability: ${(e as Error).message}`
+          `Could not parse "otherApps" capability: ${(e as Error).message}`,
         );
       }
       otherApps = await B.all(
-        otherApps.map((app) => this.helpers.configureApp(app, [APK_EXTENSION, APKS_EXTENSION]))
+        otherApps.map((app) => this.helpers.configureApp(app, [APK_EXTENSION, APKS_EXTENSION])),
       );
       await this.installOtherApks(otherApps);
     }
@@ -1100,13 +1087,13 @@ class AndroidUiautomator2Driver
         }
       } else {
         this.log.debug(
-          'noReset has been requested and the app is already installed. Doing nothing'
+          'noReset has been requested and the app is already installed. Doing nothing',
         );
       }
     } else {
       if (this.opts.fullReset) {
         throw this.log.errorWithException(
-          'Full reset requires an app capability, use fastReset if app is not provided'
+          'Full reset requires an app capability, use fastReset if app is not provided',
         );
       }
       this.log.debug('No app capability. Assuming it is already on the device');
@@ -1122,7 +1109,7 @@ class AndroidUiautomator2Driver
     const appWaitActivity = this.opts.appWaitActivity || this.opts.appActivity;
     this.log.info(
       `Starting '${this.opts.appPackage}/${this.opts.appActivity}' ` +
-      `and waiting for '${appWaitPackage}/${appWaitActivity}'`
+        `and waiting for '${appWaitPackage}/${appWaitActivity}'`,
     );
 
     if (
@@ -1132,7 +1119,7 @@ class AndroidUiautomator2Driver
     ) {
       this.log.info(
         `'${this.opts.appPackage}' is already running and noReset is enabled. ` +
-        `Set forceAppLaunch capability to true if the app must be forcefully restarted on session startup.`
+          `Set forceAppLaunch capability to true if the app must be forcefully restarted on session startup.`,
       );
       return;
     }
@@ -1148,21 +1135,6 @@ class AndroidUiautomator2Driver
 
       // Execute custom Oculus Browser PWA launch command
       const pwaUrl = `ovrweb://pwa?packageName=${this.opts.pwaPackage}`;
-      await this.adb!.shell([
-        'am',
-        'start',
-        '-n',
-        'com.oculus.browser/.ShortcutPanelActivity',
-        '-a',
-        'android.intent.action.VIEW',
-        '-c',
-        'com.oculus.intent.category.VR_HOME_LAUNCHER',
-        '-d',
-        pwaUrl
-      ])
-
-      await this.adb.forceStop(this.opts.appPackage!);
-
       await this.adb!.shell([
         'am',
         'start',
@@ -1255,9 +1227,9 @@ class AndroidUiautomator2Driver
           (async () => {
             try {
               await task();
-            } catch { }
+            } catch {}
           })();
-        })
+        }),
       );
 
       if (this.opts.appPackage) {
@@ -1274,7 +1246,7 @@ class AndroidUiautomator2Driver
         }
         if (this.opts.fullReset && !this.opts.skipUninstall) {
           this.log.debug(
-            `Capability 'fullReset' set to 'true', Uninstalling '${this.opts.appPackage}'`
+            `Capability 'fullReset' set to 'true', Uninstalling '${this.opts.appPackage}'`,
           );
           try {
             await this.adb.uninstallApk(this.opts.appPackage);
@@ -1389,16 +1361,16 @@ class AndroidUiautomator2Driver
 
   async updateSettings(settings: Uiautomator2Settings) {
     await this.settings.update(settings);
-    await this.uiautomator2!.jwproxy.command('/appium/settings', 'POST', { settings });
+    await this.uiautomator2!.jwproxy.command('/appium/settings', 'POST', {settings});
   }
 
   async getSettings() {
     const driverSettings = this.settings.getSettings();
     const serverSettings = (await this.uiautomator2!.jwproxy.command(
       '/appium/settings',
-      'GET'
+      'GET',
     )) as Partial<Uiautomator2Settings>;
-    return { ...driverSettings, ...serverSettings } as any;
+    return {...driverSettings, ...serverSettings} as any;
   }
 
   // needed to make the typechecker happy
@@ -1491,4 +1463,4 @@ class AndroidUiautomator2Driver
   mobileViewPortRect = mobileViewPortRect;
 }
 
-export { AndroidUiautomator2Driver };
+export {AndroidUiautomator2Driver};
