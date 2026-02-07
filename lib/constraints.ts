@@ -41,6 +41,9 @@ const UIAUTOMATOR2_CONSTRAINTS = {
   skipDeviceAutoConnect: {
     isBoolean: true,
   },
+  useCDP: {
+    isBoolean: true,
+  },
   ...commonCapConstraints,
 } as const satisfies Constraints;
 

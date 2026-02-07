@@ -241,13 +241,15 @@ export class CDPClient {
 
     /**
      * Get window rectangle dimensions
+     * Returns actual pixel dimensions (multiplied by DPR for consistency with native context)
+     * This ensures coordinates match between NATIVE_APP and WEBVIEW contexts
      */
     async getWindowRect(): Promise<{ x: number; y: number; width: number; height: number }> {
         const rect = await this.executeScript(`({
             x: 0,
             y: 0,
-            width: window.innerWidth,
-            height: window.innerHeight
+            width: Math.round(window.innerWidth * (window.devicePixelRatio || 1)),
+            height: Math.round(window.innerHeight * (window.devicePixelRatio || 1))
         })`);
         return rect;
     }
