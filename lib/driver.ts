@@ -241,8 +241,10 @@ const CHROME_NO_PROXY: RouteMatcher[] = [
   ['GET', new RegExp('^/session/[^/]+/se/log/types$')],
   // For Selenium v4 (W3C does not have this route)
   ['POST', new RegExp('^/session/[^/]+/se/log$')],
+];
 
-  // CDP routes - these need to be handled by CDP client, not proxied
+// CDP-specific routes that should not be proxied to Chromedriver when using CDP (Oculus only)
+const CDP_NO_PROXY: RouteMatcher[] = [
   ['GET', new RegExp('^/session/[^/]+/source$')],
   ['GET', new RegExp('^/session/[^/]+/screenshot$')],
   ['GET', new RegExp('^/session/[^/]+/window/rect$')],
@@ -312,18 +314,20 @@ class AndroidUiautomator2Driver
     const originalSetContext = this.setContext.bind(this);
     const originalGetCurrentContext = this.getCurrentContext.bind(this);
 
-    // Override context methods to use CDP for Oculus Browser
+    // Override context methods to use CDP ONLY for Oculus Browser
     this.getContexts = async () => {
-      if (this.cdpContextManager) {
-        this.log.debug('[CDP] Using CDP context manager for getContexts');
+      // Only use CDP for Oculus Browser, use standard Chromedriver for all other apps
+      if (this.cdpContextManager && this.opts.appPackage === 'com.oculus.browser') {
+        this.log.debug('[CDP] Using CDP context manager for getContexts (Oculus Browser)');
         return await this.cdpContextManager.getContexts();
       }
       return await originalGetContexts();
     };
 
     this.setContext = async (name?: string) => {
-      if (this.cdpContextManager && name) {
-        this.log.debug(`[CDP] Using CDP context manager for setContext: ${name}`);
+      // Only use CDP for Oculus Browser, use standard Chromedriver for all other apps
+      if (this.cdpContextManager && this.opts.appPackage === 'com.oculus.browser' && name) {
+        this.log.debug(`[CDP] Using CDP context manager for setContext: ${name} (Oculus Browser)`);
         await this.cdpContextManager.setContext(name);
 
         // Update internal tracking
@@ -341,7 +345,8 @@ class AndroidUiautomator2Driver
     };
 
     this.getCurrentContext = async () => {
-      if (this.cdpContextManager) {
+      // Only use CDP for Oculus Browser, use standard Chromedriver for all other apps
+      if (this.cdpContextManager && this.opts.appPackage === 'com.oculus.browser') {
         return this.cdpContextManager.getCurrentContext() || 'NATIVE_APP';
       }
       return await originalGetCurrentContext();
@@ -350,16 +355,16 @@ class AndroidUiautomator2Driver
     // Store original execute method before overriding for CDP support
     const originalExecute = this.execute.bind(this);
 
-    // Override execute to handle CDP script execution
+    // Override execute to handle CDP script execution (only for Oculus Browser)
     this.execute = async (script: string, args?: any) => {
       // Check if this is a mobile: command
       if (script.trim().startsWith('mobile:')) {
         return await originalExecute(script, args);
       }
 
-      // Check if we're in a CDP-managed webview context
-      if (this.cdpContextManager && this.curContext !== 'NATIVE_APP') {
-        this.log.debug('[CDP] Executing script via CDP');
+      // Check if we're in a CDP-managed webview context for Oculus Browser
+      if (this.cdpContextManager && this.opts.appPackage === 'com.oculus.browser' && this.curContext !== 'NATIVE_APP') {
+        this.log.debug('[CDP] Executing script via CDP (Oculus Browser)');
         const cdpClient = this.cdpContextManager.getCurrentCDPClient();
         if (cdpClient) {
           return await cdpClient.executeScriptWithArgs(script, args || []);
@@ -373,10 +378,10 @@ class AndroidUiautomator2Driver
     // Store original getPageSource method before overriding for CDP support
     const originalGetPageSource = this.getPageSource.bind(this);
 
-    // Override getPageSource to use CDP DOM tree
+    // Override getPageSource to use CDP DOM tree (only for Oculus Browser)
     this.getPageSource = async () => {
-      if (this.cdpContextManager && this.curContext !== 'NATIVE_APP') {
-        this.log.debug('[CDP] Getting DOM element tree via CDP');
+      if (this.cdpContextManager && this.opts.appPackage === 'com.oculus.browser' && this.curContext !== 'NATIVE_APP') {
+        this.log.debug('[CDP] Getting DOM element tree via CDP (Oculus Browser)');
         const cdpClient = this.cdpContextManager.getCurrentCDPClient();
         if (cdpClient) {
           return await cdpClient.getDOMElementTree();
@@ -388,10 +393,10 @@ class AndroidUiautomator2Driver
     // Store original getScreenshot method before overriding for CDP support
     const originalGetScreenshot = this.getScreenshot.bind(this);
 
-    // Override getScreenshot to use CDP
+    // Override getScreenshot to use CDP (only for Oculus Browser)
     this.getScreenshot = async () => {
-      if (this.cdpContextManager && this.curContext !== 'NATIVE_APP') {
-        this.log.debug('[CDP] Taking screenshot via CDP');
+      if (this.cdpContextManager && this.opts.appPackage === 'com.oculus.browser' && this.curContext !== 'NATIVE_APP') {
+        this.log.debug('[CDP] Taking screenshot via CDP (Oculus Browser)');
         const cdpClient = this.cdpContextManager.getCurrentCDPClient();
         if (cdpClient) {
           return await cdpClient.takeScreenshot();
@@ -403,10 +408,10 @@ class AndroidUiautomator2Driver
     // Store original getWindowRect method before overriding for CDP support
     const originalGetWindowRect = this.getWindowRect.bind(this);
 
-    // Override getWindowRect to use CDP
+    // Override getWindowRect to use CDP (only for Oculus Browser)
     this.getWindowRect = async () => {
-      if (this.cdpContextManager && this.curContext !== 'NATIVE_APP') {
-        this.log.debug('[CDP] Getting window rect via CDP');
+      if (this.cdpContextManager && this.opts.appPackage === 'com.oculus.browser' && this.curContext !== 'NATIVE_APP') {
+        this.log.debug('[CDP] Getting window rect via CDP (Oculus Browser)');
         const cdpClient = this.cdpContextManager.getCurrentCDPClient();
         if (cdpClient) {
           return await cdpClient.getWindowRect();
@@ -418,10 +423,10 @@ class AndroidUiautomator2Driver
     // Store original getWindowSize method before overriding for CDP support
     const originalGetWindowSize = this.getWindowSize.bind(this);
 
-    // Override getWindowSize to use CDP
+    // Override getWindowSize to use CDP (only for Oculus Browser)
     this.getWindowSize = async () => {
-      if (this.cdpContextManager && this.curContext !== 'NATIVE_APP') {
-        this.log.debug('[CDP] Getting window size via CDP');
+      if (this.cdpContextManager && this.opts.appPackage === 'com.oculus.browser' && this.curContext !== 'NATIVE_APP') {
+        this.log.debug('[CDP] Getting window size via CDP (Oculus Browser)');
         const cdpClient = this.cdpContextManager.getCurrentCDPClient();
         if (cdpClient) {
           const rect = await cdpClient.getWindowRect();
@@ -434,10 +439,10 @@ class AndroidUiautomator2Driver
     // Store original getViewPortRect method before overriding for CDP support
     const originalGetViewPortRect = this.getViewPortRect.bind(this);
 
-    // Override getViewPortRect to use CDP viewport
+    // Override getViewPortRect to use CDP viewport (only for Oculus Browser)
     this.getViewPortRect = async () => {
-      if (this.cdpContextManager && this.curContext !== 'NATIVE_APP') {
-        this.log.debug('[CDP] Getting viewport rect via CDP');
+      if (this.cdpContextManager && this.opts.appPackage === 'com.oculus.browser' && this.curContext !== 'NATIVE_APP') {
+        this.log.debug('[CDP] Getting viewport rect via CDP (Oculus Browser)');
         const cdpClient = this.cdpContextManager.getCurrentCDPClient();
         if (cdpClient) {
           const rect = await cdpClient.getWindowRect();
@@ -455,10 +460,10 @@ class AndroidUiautomator2Driver
     // Store original findElement method before overriding for CDP support
     const originalFindElement = this.findElement.bind(this);
 
-    // Override findElement to use CDP
+    // Override findElement to use CDP (only for Oculus Browser)
     this.findElement = async (strategy: string, selector: string) => {
-      if (this.cdpContextManager && this.curContext !== 'NATIVE_APP') {
-        this.log.debug(`[CDP] Finding element via CDP: ${strategy} = ${selector}`);
+      if (this.cdpContextManager && this.opts.appPackage === 'com.oculus.browser' && this.curContext !== 'NATIVE_APP') {
+        this.log.debug(`[CDP] Finding element via CDP (Oculus Browser): ${strategy} = ${selector}`);
         const cdpClient = this.cdpContextManager.getCurrentCDPClient();
         if (cdpClient) {
           return await cdpClient.findElementByStrategy(strategy, selector);
@@ -470,10 +475,10 @@ class AndroidUiautomator2Driver
     // Store original findElements method before overriding for CDP support
     const originalFindElements = this.findElements.bind(this);
 
-    // Override findElements to use CDP
+    // Override findElements to use CDP (only for Oculus Browser)
     this.findElements = async (strategy: string, selector: string) => {
-      if (this.cdpContextManager && this.curContext !== 'NATIVE_APP') {
-        this.log.debug(`[CDP] Finding elements via CDP: ${strategy} = ${selector}`);
+      if (this.cdpContextManager && this.opts.appPackage === 'com.oculus.browser' && this.curContext !== 'NATIVE_APP') {
+        this.log.debug(`[CDP] Finding elements via CDP (Oculus Browser): ${strategy} = ${selector}`);
         const cdpClient = this.cdpContextManager.getCurrentCDPClient();
         if (cdpClient) {
           return await cdpClient.findElementsByStrategy(strategy, selector);
@@ -485,10 +490,10 @@ class AndroidUiautomator2Driver
     // Store original click method before overriding for CDP support
     const originalClick = this.click.bind(this);
 
-    // Override click to use CDP
+    // Override click to use CDP (only for Oculus Browser)
     this.click = async (elementId: string) => {
-      if (this.cdpContextManager && this.curContext !== 'NATIVE_APP') {
-        this.log.debug(`[CDP] Clicking element via CDP: ${elementId}`);
+      if (this.cdpContextManager && this.opts.appPackage === 'com.oculus.browser' && this.curContext !== 'NATIVE_APP') {
+        this.log.debug(`[CDP] Clicking element via CDP (Oculus Browser): ${elementId}`);
         const cdpClient = this.cdpContextManager.getCurrentCDPClient();
         if (cdpClient) {
           return await cdpClient.clickElement(elementId);
@@ -500,10 +505,10 @@ class AndroidUiautomator2Driver
     // Store original getAttribute method before overriding for CDP support
     const originalGetAttribute = this.getAttribute.bind(this);
 
-    // Override getAttribute to use CDP
+    // Override getAttribute to use CDP (only for Oculus Browser)
     this.getAttribute = async (attribute: string, elementId: string) => {
-      if (this.cdpContextManager && this.curContext !== 'NATIVE_APP') {
-        this.log.debug(`[CDP] Getting attribute '${attribute}' via CDP for element: ${elementId}`);
+      if (this.cdpContextManager && this.opts.appPackage === 'com.oculus.browser' && this.curContext !== 'NATIVE_APP') {
+        this.log.debug(`[CDP] Getting attribute '${attribute}' via CDP for element (Oculus Browser): ${elementId}`);
         const cdpClient = this.cdpContextManager.getCurrentCDPClient();
         if (cdpClient) {
           return await cdpClient.getElementAttribute(elementId, attribute);
@@ -515,10 +520,10 @@ class AndroidUiautomator2Driver
     // Store original getText method before overriding for CDP support
     const originalGetText = this.getText.bind(this);
 
-    // Override getText to use CDP
+    // Override getText to use CDP (only for Oculus Browser)
     this.getText = async (elementId: string) => {
-      if (this.cdpContextManager && this.curContext !== 'NATIVE_APP') {
-        this.log.debug(`[CDP] Getting text via CDP for element: ${elementId}`);
+      if (this.cdpContextManager && this.opts.appPackage === 'com.oculus.browser' && this.curContext !== 'NATIVE_APP') {
+        this.log.debug(`[CDP] Getting text via CDP for element (Oculus Browser): ${elementId}`);
         const cdpClient = this.cdpContextManager.getCurrentCDPClient();
         if (cdpClient) {
           return await cdpClient.getElementText(elementId);
@@ -570,11 +575,30 @@ class AndroidUiautomator2Driver
       _.defaults(this.opts, defaultOpts);
 
       this.opts.adbPort = this.opts.adbPort || DEFAULT_ADB_PORT;
+
+      // Auto-connect to network device if deviceName looks like IP:PORT
+      // Do this BEFORE getDeviceInfoFromCaps() so the device is available
+      const deviceNameFromCaps = caps.deviceName;
+      if (deviceNameFromCaps && /^\d+\.\d+\.\d+\.\d+:\d+$/.test(deviceNameFromCaps) && !this.opts.skipDeviceAutoConnect) {
+        this.log.info(`Detected network device address: ${deviceNameFromCaps}. Attempting to connect...`);
+        try {
+          // Create a temporary ADB instance to perform the connect
+          const {ADB} = await import('appium-adb');
+          const tempAdb = await ADB.createADB({adbPort: this.opts.adbPort});
+          await tempAdb.adbExec(['connect', deviceNameFromCaps]);
+          this.log.info(`Successfully connected to ${deviceNameFromCaps}`);
+        } catch (err) {
+          this.log.warn(`Failed to connect to ${deviceNameFromCaps}: ${err.message}`);
+          // Continue anyway as the device might already be connected
+        }
+      }
+
       // get device udid for this session
       const {udid, emPort} = await this.getDeviceInfoFromCaps();
       this.opts.udid = udid;
       // @ts-expect-error do not put random stuff on opts
       this.opts.emPort = emPort;
+
       // now that we know our java version and device info, we can create our
       // ADB instance
       this.adb = await this.createADB();
@@ -1344,8 +1368,8 @@ class AndroidUiautomator2Driver
       // if the current context is webview(chromedriver), then return CHROME_NO_PROXY list
       this.jwpProxyAvoid = CHROME_NO_PROXY;
     } else if (this.cdpContextManager && this.curContext !== 'NATIVE_APP') {
-      // if the current context is CDP webview, return CHROME_NO_PROXY list
-      this.jwpProxyAvoid = CHROME_NO_PROXY;
+      // if the current context is CDP webview (Oculus), return CHROME_NO_PROXY + CDP_NO_PROXY list
+      this.jwpProxyAvoid = [...CHROME_NO_PROXY, ...CDP_NO_PROXY];
     } else {
       this.jwpProxyAvoid = NO_PROXY;
     }

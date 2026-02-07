@@ -38,6 +38,9 @@ const UIAUTOMATOR2_CONSTRAINTS = {
   pwaPackage: {
     isString: true,
   },
+  skipDeviceAutoConnect: {
+    isBoolean: true,
+  },
   ...commonCapConstraints,
 } as const satisfies Constraints;
 

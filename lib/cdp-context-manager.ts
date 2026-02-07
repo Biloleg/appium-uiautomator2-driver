@@ -244,6 +244,19 @@ export class CDPContextManager {
     }
 
     /**
+     * Check if a URL is an internal Chrome page that should not be used for caching dimensions
+     */
+    private _isInternalPage(url: string): boolean {
+        const internalPagePrefixes = [
+            'chrome://',
+            'chrome-devtools://',
+            'about:',
+            'data:',
+        ];
+        return internalPagePrefixes.some(prefix => url.startsWith(prefix));
+    }
+
+    /**
      * Connect to webview via CDP
      */
     private async _connectToWebView(contextName: string): Promise<void> {
@@ -292,7 +305,7 @@ export class CDPContextManager {
                 localPort,
             });
 
-            this.logger.info(`[CDP] Successfully connected to ${contextName}`);
+            this.logger.info(`[CDP] Successfully connected to ${contextName} (page: ${page.url})`);
         } catch (error) {
             // Clean up port forward on error
             await this.adb.adbExec(['forward', '--remove', `tcp:${localPort}`]);
@@ -363,8 +376,16 @@ export class CDPContextManager {
     /**
      * Update cached viewport dimensions
      * Should be called after successfully getting dimensions from CDP
+     * Only caches dimensions from real web pages, not internal Chrome pages
      */
     updateCachedViewportDimensions(width: number, height: number): void {
+        // Check if current connected page is an internal page
+        const currentContext = this.contexts.get(this.currentContext);
+        if (currentContext?.page?.url && this._isInternalPage(currentContext.page.url)) {
+            this.logger.warn(`[CDP] Skipping cache update - connected to internal page: ${currentContext.page.url}`);
+            return;
+        }
+
         this.logger.info(`[CDP] Caching viewport dimensions: ${width}x${height}`);
         this.cachedViewportDimensions = { width, height };
     }
