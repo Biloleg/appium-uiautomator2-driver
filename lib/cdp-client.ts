@@ -241,15 +241,15 @@ export class CDPClient {
 
     /**
      * Get window rectangle dimensions
-     * Returns actual pixel dimensions (multiplied by DPR for consistency with native context)
-     * This ensures coordinates match between NATIVE_APP and WEBVIEW contexts
+     * Returns CSS logical pixel dimensions (not scaled by DPR).
+     * WebDriver protocol coordinates are always in logical pixels.
      */
     async getWindowRect(): Promise<{ x: number; y: number; width: number; height: number }> {
         const rect = await this.executeScript(`({
             x: 0,
             y: 0,
-            width: Math.round(window.innerWidth * (window.devicePixelRatio || 1)),
-            height: Math.round(window.innerHeight * (window.devicePixelRatio || 1))
+            width: Math.round(window.innerWidth),
+            height: Math.round(window.innerHeight)
         })`);
         return rect;
     }
@@ -268,7 +268,7 @@ export class CDPClient {
         this.elementCache.clear();
         this.elementIdCounter = 0;
 
-        // Get scroll position and DPR via JavaScript
+        // Get scroll position via JavaScript
         const scrollAndDpr = await this.executeScript(`({
             scrollX: window.scrollX || window.pageXOffset || 0,
             scrollY: window.scrollY || window.pageYOffset || 0,
@@ -302,12 +302,12 @@ export class CDPClient {
                     const right = Math.max(border[2], border[4]);
                     const bottom = Math.max(border[5], border[7]);
 
-                    // Apply scroll offset and DPR
+                    // Apply scroll offset (no DPR scaling - stay in logical CSS pixels)
                     bounds = {
-                        left: Math.round((left + scrollAndDpr.scrollX) * scrollAndDpr.dpr),
-                        top: Math.round((top + scrollAndDpr.scrollY) * scrollAndDpr.dpr),
-                        right: Math.round((right + scrollAndDpr.scrollX) * scrollAndDpr.dpr),
-                        bottom: Math.round((bottom + scrollAndDpr.scrollY) * scrollAndDpr.dpr)
+                        left: Math.round(left + scrollAndDpr.scrollX),
+                        top: Math.round(top + scrollAndDpr.scrollY),
+                        right: Math.round(right + scrollAndDpr.scrollX),
+                        bottom: Math.round(bottom + scrollAndDpr.scrollY)
                     };
                 }
             } catch (e) {
@@ -516,14 +516,14 @@ export class CDPClient {
             );
 
             // For text attribute (Android-specific), convert to text() function (web standard)
-            // Convert [@text="value"] to [normalize-space(text())="value"]
+            // Convert [@text="value"] to [text()="value"] — matches //a[text()="value"] form
             translatedSelector = translatedSelector.replace(
                 /@text\s*=\s*"([^"]*)"/g,
-                'normalize-space(text())="$1"'
+                'text()="$1"'
             );
             translatedSelector = translatedSelector.replace(
                 /@text\s*=\s*'([^']*)'/g,
-                "normalize-space(text())='$1'"
+                "text()='$1'"
             );
 
             this.logger.info(`[CDP] Original XPath: ${selector}`);
@@ -644,6 +644,17 @@ export class CDPClient {
             translatedSelector = translatedSelector.replace(
                 /@content-desc\s*=\s*'([^']*)'/g,
                 "(@aria-label='$1' or @title='$1')"
+            );
+
+            // For text attribute (Android-specific), convert to text() function (web standard)
+            // Convert [@text="value"] to [text()="value"] — matches //a[text()="value"] form
+            translatedSelector = translatedSelector.replace(
+                /@text\s*=\s*"([^"]*)"/g,
+                'text()="$1"'
+            );
+            translatedSelector = translatedSelector.replace(
+                /@text\s*=\s*'([^']*)'/g,
+                "text()='$1'"
             );
 
             this.logger.info(`[CDP] Original XPath: ${selector}`);
@@ -857,12 +868,11 @@ export class CDPClient {
             objectId: objectId,
             functionDeclaration: `function() {
                 const rect = this.getBoundingClientRect();
-                const dpr = window.devicePixelRatio || 1;
                 return {
-                    x: Math.round((rect.left + window.scrollX) * dpr),
-                    y: Math.round((rect.top + window.scrollY) * dpr),
-                    width: Math.round(rect.width * dpr),
-                    height: Math.round(rect.height * dpr)
+                    x: Math.round(rect.left + window.scrollX),
+                    y: Math.round(rect.top + window.scrollY),
+                    width: Math.round(rect.width),
+                    height: Math.round(rect.height)
                 };
             }`,
             returnByValue: true
