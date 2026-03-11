@@ -44,7 +44,7 @@ export class CDPClient {
     private logger: AppiumLogger;
     private localPort: number;
     private connected = false;
-    private elementCache: Map<string, number> = new Map(); // Maps elementId -> nodeId
+    private elementCache: Map<string, number | string> = new Map(); // Maps elementId -> nodeId or objectId
     private elementIdCounter = 0;
 
     constructor(localPort: number, logger: AppiumLogger) {
@@ -197,25 +197,87 @@ export class CDPClient {
     }
 
     /**
-     * Execute JavaScript with arguments
-     * Wraps the script to make 'arguments' available
+     * Execute JavaScript with arguments.
+     * Wraps the script to make 'arguments' available.
+     * WebDriver element references are resolved to actual DOM objects via objectId.
      */
     async executeScriptWithArgs(script: string, args: any[] = []): Promise<any> {
-        // JSON.stringify handles basic types. For DOM elements, we would need complexity.
-        const safeArgs = JSON.stringify(args);
+        const W3C_WEB_ELEMENT_KEY = 'element-6066-11e4-a52e-4f735466cecf';
+        const LEGACY_ELEMENT_KEY = 'ELEMENT';
 
-        // Wrap script to support 'arguments'
-        // Handle explicit 'return' if present, similar to how Selenium does it
-        // Note: This is an approximation.
+        const getElementId = (arg: any): string | null => {
+            if (arg && typeof arg === 'object') {
+                if (arg[W3C_WEB_ELEMENT_KEY]) return arg[W3C_WEB_ELEMENT_KEY];
+                if (arg[LEGACY_ELEMENT_KEY]) return arg[LEGACY_ELEMENT_KEY];
+            }
+            return null;
+        };
 
-        const expression = `
-            (function() { 
-                var arguments = ${safeArgs}; 
-                ${script} 
-            })()
-        `;
+        const hasElementArg = args.some(a => getElementId(a) !== null);
 
-        return await this.executeScript(expression);
+        if (!hasElementArg) {
+            // Fast path: no DOM elements — just inline JSON args
+            const safeArgs = JSON.stringify(args);
+            const expression = `(function() { var arguments = ${safeArgs}; ${script} })()`;
+            return await this.executeScript(expression);
+        }
+
+        // Slow path: resolve element references to real CDP objectIds so the DOM node is passed
+        // as an actual object (not a plain JS object) to the script.
+        const cdpArguments: Array<{ value?: any; objectId?: string }> = [];
+
+        for (let i = 0; i < args.length; i++) {
+            const elementId = getElementId(args[i]);
+            if (elementId !== null) {
+                const cachedValue = this.elementCache.get(elementId);
+                if (!cachedValue) {
+                    throw new Error(`Element not found in cache: ${elementId}`);
+                }
+                let objectId: string;
+                if (typeof cachedValue === 'string') {
+                    objectId = cachedValue;
+                } else {
+                    const resolved = await this.sendCommand('DOM.resolveNode', { nodeId: cachedValue });
+                    if (!resolved?.object?.objectId) {
+                        throw new Error(`Failed to resolve element node to object: ${elementId}`);
+                    }
+                    objectId = resolved.object.objectId;
+                    this.elementCache.set(elementId, objectId);
+                }
+                cdpArguments.push({ objectId });
+            } else {
+                cdpArguments.push({ value: args[i] });
+            }
+        }
+
+        // Use document as the "this" context for Runtime.callFunctionOn
+        const docResult = await this.sendCommand('Runtime.evaluate', {
+            expression: 'document',
+            returnByValue: false,
+        });
+        const docObjectId: string = docResult.result?.objectId;
+        if (!docObjectId) {
+            throw new Error('Failed to get document objectId for script execution');
+        }
+
+        // Build function that exposes positional params as 'arguments'
+        const paramNames = args.map((_, i) => `__arg${i}`).join(', ');
+        const argumentsSetup = `var arguments = [${args.map((_, i) => `__arg${i}`).join(', ')}];`;
+        const functionDeclaration = `function(${paramNames}) { ${argumentsSetup} ${script} }`;
+
+        const callResult = await this.sendCommand('Runtime.callFunctionOn', {
+            objectId: docObjectId,
+            functionDeclaration,
+            arguments: cdpArguments,
+            returnByValue: true,
+            awaitPromise: false,
+        });
+
+        if (callResult.exceptionDetails) {
+            throw new Error(`Script execution failed: ${JSON.stringify(callResult.exceptionDetails)}`);
+        }
+
+        return callResult.result?.value;
     }
 
     /**
