@@ -1170,21 +1170,20 @@ class AndroidUiautomator2Driver
       if (this.opts.forceAppLaunch || !this.opts.dontStopAppOnReset) {
         await this.adb!.forceStop(this.opts.appPackage!);
       }
-
-      // Execute custom Oculus Browser PWA launch command
-      const pwaUrl = `ovrweb://pwa?packageName=${this.opts.pwaPackage}`;
-      await this.adb!.shell([
-        'am',
-        'start',
-        '-n',
-        'com.oculus.browser/.ShortcutPanelActivity',
-        '-a',
-        'android.intent.action.VIEW',
-        '-c',
-        'com.oculus.intent.category.VR_HOME_LAUNCHER',
-        '-d',
-        pwaUrl,
-      ]);
+        // Special launch command for PWA via VR shell
+        const pwaUrl = this.opts.url || 'https://www.xbox.com/en-US/play';
+        this.log.info(`Using VR shell launch command for com.xbox.pwa`);
+        await this.adb!.shell([
+          'am',
+          'start',
+          '-n',
+          'com.oculus.vrshell/.MainActivity',
+          '-d',
+          `apk://${this.opts.pwaPackage}`,
+          '-e',
+          'uri',
+          pwaUrl
+        ]);
 
       // Wait for the app to launch using appPackage and appActivity
       if (!this.opts.pwaPackage && appWaitPackage && appWaitActivity) {
@@ -1283,11 +1282,12 @@ class AndroidUiautomator2Driver
           }
         }
         if (this.opts.fullReset && !this.opts.skipUninstall) {
+          const pkgToUninstall = this.opts.pwaPackage || this.opts.appPackage;
           this.log.debug(
-            `Capability 'fullReset' set to 'true', Uninstalling '${this.opts.appPackage}'`,
+            `Capability 'fullReset' set to 'true', Uninstalling '${pkgToUninstall}'`,
           );
           try {
-            await this.adb.uninstallApk(this.opts.appPackage);
+            await this.adb.uninstallApk(pkgToUninstall);
           } catch (err) {
             this.log.warn(`Unable to uninstall app: ${(err as Error).message}`);
           }
