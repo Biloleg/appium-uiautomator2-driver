@@ -566,15 +566,15 @@ export class CDPClient {
             // Translate Android-specific attributes to HTML equivalents
             let translatedSelector = selector.replace(/@resource-id=/g, '@id=');
 
-            // For content-desc, check both aria-label and title since web elements use both
-            // Convert [@content-desc="value"] to [@aria-label="value" or @title="value"]
+            // For content-desc, check aria-label, title attribute, and SVG <title> child element
+            // Convert [@content-desc="value"] to [@aria-label="value" or @title="value" or title="value"]
             translatedSelector = translatedSelector.replace(
                 /@content-desc\s*=\s*"([^"]*)"/g,
-                '(@aria-label="$1" or @title="$1")'
+                '(@aria-label="$1" or @title="$1" or title="$1")'
             );
             translatedSelector = translatedSelector.replace(
                 /@content-desc\s*=\s*'([^']*)'/g,
-                "(@aria-label='$1' or @title='$1')"
+                "(@aria-label='$1' or @title='$1' or title='$1')"
             );
 
             // For text attribute (Android-specific), convert to text() function (web standard)
@@ -697,15 +697,15 @@ export class CDPClient {
             // Translate Android-specific attributes to HTML equivalents
             let translatedSelector = selector.replace(/@resource-id=/g, '@id=');
 
-            // For content-desc, check both aria-label and title since web elements use both
-            // Convert [@content-desc="value"] to [@aria-label="value" or @title="value"]
+            // For content-desc, check aria-label, title attribute, and SVG <title> child element
+            // Convert [@content-desc="value"] to [@aria-label="value" or @title="value" or title="value"]
             translatedSelector = translatedSelector.replace(
                 /@content-desc\s*=\s*"([^"]*)"/g,
-                '(@aria-label="$1" or @title="$1")'
+                '(@aria-label="$1" or @title="$1" or title="$1")'
             );
             translatedSelector = translatedSelector.replace(
                 /@content-desc\s*=\s*'([^']*)'/g,
-                "(@aria-label='$1' or @title='$1')"
+                "(@aria-label='$1' or @title='$1' or title='$1')"
             );
 
             // For text attribute (Android-specific), convert to text() function (web standard)
