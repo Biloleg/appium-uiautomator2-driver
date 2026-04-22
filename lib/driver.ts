@@ -1114,11 +1114,13 @@ class AndroidUiautomator2Driver
         ) {
           await signApp(this.adb!, this.opts.app);
         }
-        if (!this.opts.skipUninstall) {
+        if (!this.opts.skipUninstall && !this.opts.pwaPackage) {
           await this.adb!.uninstallApk(this.opts.appPackage!);
         }
         if (this.opts.pwaPackage && this.opts.app) {
-          await this.adb.uninstallApk(this.opts.pwaPackage);
+          if (!this.opts.skipUninstall) {
+            await this.adb.uninstallApk(this.opts.pwaPackage);
+          }
           await this.adb.install(this.opts.app);
         } else {
           await this.installAUT();
