@@ -910,8 +910,9 @@ class AndroidUiautomator2Driver
       this.log.info('[CDP] Discovering webview contexts...');
       let contexts: string[] = [];
       let attempts = 0;
-      const maxAttempts = 10;
+      const cdpDiscoveryTimeout = this.opts.autoWebviewTimeout || 30000;
       const delayMs = 1000;
+      const maxAttempts = Math.max(10, Math.ceil(cdpDiscoveryTimeout / delayMs));
 
       // Retry context discovery until webview is found
       while (attempts < maxAttempts) {
@@ -977,9 +978,9 @@ class AndroidUiautomator2Driver
     // appropriately
     if (this.opts.autoWebview) {
       const viewName = this.defaultWebviewName();
-      const timeout = this.opts.autoWebviewTimeout || 2000;
+      const timeout = this.opts.autoWebviewTimeout || 30000;
       this.log.info(`Setting auto webview to context '${viewName}' with timeout ${timeout}ms`);
-      await retryInterval(timeout / 500, 500, this.setContext.bind(this), viewName);
+      await retryInterval(Math.ceil(timeout / 500), 500, this.setContext.bind(this), viewName);
     }
 
     // We would like to notify about the initial context setting
