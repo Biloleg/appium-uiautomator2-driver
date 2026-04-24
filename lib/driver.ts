@@ -1083,7 +1083,8 @@ class AndroidUiautomator2Driver
         `Capability 'fullReset' set to 'true' with 'pwaPackage', clearing data for '${this.opts.appPackage}'`,
       );
       try {
-        await this.adb!.shell(['pm', 'clear', this.opts.appPackage]);
+        const result = await this.adb!.shell(['pm', 'clear', this.opts.appPackage]);
+        this.log.info(`'pm clear ${this.opts.appPackage}' result: ${result.trim()}`);
       } catch (err) {
         this.log.warn(`Unable to clear app data for '${this.opts.appPackage}': ${(err as Error).message}`);
       }
@@ -1313,7 +1314,8 @@ class AndroidUiautomator2Driver
             `Capability 'fullReset' set to 'true' with 'pwaPackage', clearing data for '${this.opts.appPackage}' at session end`,
           );
           try {
-            await this.adb.shell(['pm', 'clear', this.opts.appPackage]);
+            const result = await this.adb.shell(['pm', 'clear', this.opts.appPackage]);
+            this.log.info(`'pm clear ${this.opts.appPackage}' result: ${result.trim()}`);
           } catch (err) {
             this.log.warn(`Unable to clear app data for '${this.opts.appPackage}': ${(err as Error).message}`);
           }
