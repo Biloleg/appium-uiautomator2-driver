@@ -1077,6 +1077,18 @@ class AndroidUiautomator2Driver
   }
 
   async initAUT() {
+    // If fullReset + pwaPackage: clear appPackage data at the start of session
+    if (this.opts.fullReset && this.opts.pwaPackage && this.opts.appPackage) {
+      this.log.info(
+        `Capability 'fullReset' set to 'true' with 'pwaPackage', clearing data for '${this.opts.appPackage}'`,
+      );
+      try {
+        await this.adb!.shell(['pm', 'clear', this.opts.appPackage]);
+      } catch (err) {
+        this.log.warn(`Unable to clear app data for '${this.opts.appPackage}': ${(err as Error).message}`);
+      }
+    }
+
     // Uninstall any uninstallOtherPackages which were specified in caps
     if (this.opts.uninstallOtherPackages) {
       await this.uninstallOtherPackages(utils.parseArray(this.opts.uninstallOtherPackages), [
@@ -1132,7 +1144,7 @@ class AndroidUiautomator2Driver
         );
       }
     } else {
-      if (this.opts.fullReset) {
+      if (this.opts.fullReset && !this.opts.pwaPackage) {
         throw this.log.errorWithException(
           'Full reset requires an app capability, use fastReset if app is not provided',
         );
@@ -1293,6 +1305,17 @@ class AndroidUiautomator2Driver
             await this.adb.uninstallApk(pkgToUninstall);
           } catch (err) {
             this.log.warn(`Unable to uninstall app: ${(err as Error).message}`);
+          }
+        }
+        // If fullReset + pwaPackage: clear appPackage data at the end of session
+        if (this.opts.fullReset && this.opts.pwaPackage && this.opts.appPackage) {
+          this.log.info(
+            `Capability 'fullReset' set to 'true' with 'pwaPackage', clearing data for '${this.opts.appPackage}' at session end`,
+          );
+          try {
+            await this.adb.shell(['pm', 'clear', this.opts.appPackage]);
+          } catch (err) {
+            this.log.warn(`Unable to clear app data for '${this.opts.appPackage}': ${(err as Error).message}`);
           }
         }
       }
