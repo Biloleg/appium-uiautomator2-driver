@@ -46,6 +46,8 @@
     "prepare": "npm run rebuild",
     "rebuild": "npm run clean; npm run build",
     "format": "prettier -w ./lib",
+    "patch": "bash ./scripts/patch-installed.sh",
+    "apply-patch": "bash ./scripts/apply-patch.sh",
     "reset": "node ./scripts/reset.js",
     "test": "mocha --exit --timeout 1m \"./test/unit/**/*-specs.ts\""
   },

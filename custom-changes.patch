@@ -1,0 +1,2207 @@
+Only in /Users/obilyk/WebstormProjects/appium-uiautomator2-driver/lib: cdp-client.ts
+Only in /Users/obilyk/WebstormProjects/appium-uiautomator2-driver/lib: cdp-context-manager.ts
+diff -ru --ex /Users/obilyk/.appium/node_modules/appium-uiautomator2-driver/lib/commands/actions.ts /Users/obilyk/WebstormProjects/appium-uiautomator2-driver/lib/commands/actions.ts
+--- /Users/obilyk/.appium/node_modules/appium-uiautomator2-driver/lib/commands/actions.ts	2026-04-28 14:02:15
++++ /Users/obilyk/WebstormProjects/appium-uiautomator2-driver/lib/commands/actions.ts	2026-04-14 16:53:50
+@@ -43,9 +43,7 @@
+   this: AndroidUiautomator2Driver,
+   name: string,
+ ): Promise<ActionResult> {
+-  return (await this.uiautomator2.jwproxy.command('/appium/action_history', 'POST', {
+-    name,
+-  })) as ActionResult;
++  return (await this.uiautomator2.jwproxy.command('/appium/action_history', 'POST', {name})) as ActionResult;
+ }
+ 
+ /**
+@@ -79,8 +77,8 @@
+               pointerType: 'touch',
+             },
+           }
+-        : {},
+-    ),
++        : {}
++    )
+   );
+   this.log.debug(`Preprocessed actions: ${JSON.stringify(preprocessedActions, null, '  ')}`);
+   await this.uiautomator2.jwproxy.command('/actions', 'POST', {
+@@ -94,3 +92,4 @@
+ export async function releaseActions(this: AndroidUiautomator2Driver): Promise<void> {
+   this.log.info('On this platform, releaseActions is a no-op');
+ }
++
+diff -ru --ex /Users/obilyk/.appium/node_modules/appium-uiautomator2-driver/lib/commands/alert.ts /Users/obilyk/WebstormProjects/appium-uiautomator2-driver/lib/commands/alert.ts
+--- /Users/obilyk/.appium/node_modules/appium-uiautomator2-driver/lib/commands/alert.ts	2026-04-28 14:02:15
++++ /Users/obilyk/WebstormProjects/appium-uiautomator2-driver/lib/commands/alert.ts	2026-04-14 16:53:50
+@@ -43,3 +43,4 @@
+ export async function postDismissAlert(this: AndroidUiautomator2Driver): Promise<void> {
+   await this.mobileDismissAlert();
+ }
++
+diff -ru --ex /Users/obilyk/.appium/node_modules/appium-uiautomator2-driver/lib/commands/app-management.ts /Users/obilyk/WebstormProjects/appium-uiautomator2-driver/lib/commands/app-management.ts
+--- /Users/obilyk/.appium/node_modules/appium-uiautomator2-driver/lib/commands/app-management.ts	2026-04-28 14:02:15
++++ /Users/obilyk/WebstormProjects/appium-uiautomator2-driver/lib/commands/app-management.ts	2026-04-14 16:53:50
+@@ -19,8 +19,7 @@
+   if (!_.isArray(apks) || _.isEmpty(apks)) {
+     throw new errors.InvalidArgumentError('No apks are given to install');
+   }
+-  const configuredApks = await B.all(
+-    apks.map((app) => this.helpers.configureApp(app, [APK_EXTENSION])),
+-  );
++  const configuredApks = await B.all(apks.map((app) => this.helpers.configureApp(app, [APK_EXTENSION])));
+   await this.adb.installMultipleApks(configuredApks, options);
+ }
++
+diff -ru --ex /Users/obilyk/.appium/node_modules/appium-uiautomator2-driver/lib/commands/battery.ts /Users/obilyk/WebstormProjects/appium-uiautomator2-driver/lib/commands/battery.ts
+--- /Users/obilyk/.appium/node_modules/appium-uiautomator2-driver/lib/commands/battery.ts	2026-04-28 14:02:15
++++ /Users/obilyk/WebstormProjects/appium-uiautomator2-driver/lib/commands/battery.ts	2026-04-14 16:53:50
+@@ -6,11 +6,7 @@
+  * @returns Battery information including level (0.0-1.0) and state (charging, discharging, etc.).
+  */
+ export async function mobileGetBatteryInfo(this: AndroidUiautomator2Driver): Promise<BatteryInfo> {
+-  const result = (await this.uiautomator2.jwproxy.command(
+-    '/appium/device/battery_info',
+-    'GET',
+-    {},
+-  )) as {
++  const result = (await this.uiautomator2.jwproxy.command('/appium/device/battery_info', 'GET', {})) as {
+     status: BatteryInfo['state'];
+     level: number;
+   };
+@@ -20,3 +16,4 @@
+   delete batteryInfo.status;
+   return batteryInfo as BatteryInfo;
+ }
++
+diff -ru --ex /Users/obilyk/.appium/node_modules/appium-uiautomator2-driver/lib/commands/clipboard.ts /Users/obilyk/WebstormProjects/appium-uiautomator2-driver/lib/commands/clipboard.ts
+--- /Users/obilyk/.appium/node_modules/appium-uiautomator2-driver/lib/commands/clipboard.ts	2026-04-28 14:02:15
++++ /Users/obilyk/WebstormProjects/appium-uiautomator2-driver/lib/commands/clipboard.ts	2026-04-14 16:53:50
+@@ -8,7 +8,7 @@
+   return String(
+     (await this.adb.getApiLevel()) < 29
+       ? await this.uiautomator2.jwproxy.command('/appium/device/get_clipboard', 'POST', {})
+-      : await this.settingsApp.getClipboard(),
++      : await this.settingsApp.getClipboard()
+   );
+ }
+ 
+@@ -24,9 +24,6 @@
+   contentType: 'plaintext' = 'plaintext',
+   label?: string,
+ ): Promise<void> {
+-  await this.uiautomator2.jwproxy.command('/appium/device/set_clipboard', 'POST', {
+-    content,
+-    contentType,
+-    label,
+-  });
++  await this.uiautomator2.jwproxy.command('/appium/device/set_clipboard', 'POST', {content, contentType, label});
+ }
++
+diff -ru --ex /Users/obilyk/.appium/node_modules/appium-uiautomator2-driver/lib/commands/element.ts /Users/obilyk/WebstormProjects/appium-uiautomator2-driver/lib/commands/element.ts
+--- /Users/obilyk/.appium/node_modules/appium-uiautomator2-driver/lib/commands/element.ts	2026-04-28 14:02:15
++++ /Users/obilyk/WebstormProjects/appium-uiautomator2-driver/lib/commands/element.ts	2026-04-14 17:25:33
+@@ -1,10 +1,10 @@
+-import {PROTOCOLS} from 'appium/driver';
++import { PROTOCOLS } from 'appium/driver';
+ import B from 'bluebird';
+ import _ from 'lodash';
+-import type {DoSetElementValueOpts} from 'appium-android-driver';
+-import type {Element as AppiumElement, Position, Rect, Size} from '@appium/types';
+-import type {AndroidUiautomator2Driver} from '../driver';
+-import type {Chromedriver} from 'appium-chromedriver';
++import type { DoSetElementValueOpts } from 'appium-android-driver';
++import type { Element as AppiumElement, Position, Rect, Size } from '@appium/types';
++import type { AndroidUiautomator2Driver } from '../driver';
++import type { Chromedriver } from 'appium-chromedriver';
+ 
+ /**
+  * Gets the currently active element.
+@@ -20,18 +20,19 @@
+  * @param elementId - ID of the element.
+  * @returns The attribute value as a string.
+  */
+-export async function getAttribute(
+-  this: AndroidUiautomator2Driver,
+-  attribute: string,
+-  elementId: string,
+-): Promise<string> {
+-  return String(
+-    await this.uiautomator2.jwproxy.command(
+-      `/element/${elementId}/attribute/${attribute}`,
+-      'GET',
+-      {},
+-    ),
+-  );
++export async function getAttribute(this: AndroidUiautomator2Driver, attribute: string, elementId: string): Promise<string> {
++  // Check if we're using CDP context manager for web context
++  const cdpManager = (this as any).cdpContextManager;
++  if (cdpManager && cdpManager.getCurrentContext() !== 'NATIVE_APP') {
++    const cdpClient = cdpManager.getCurrentCDPClient();
++    if (cdpClient) {
++      this.log.info(`[CDP] Getting attribute '${attribute}' for element ${elementId}`);
++      const value = await cdpClient.getElementAttribute(elementId, attribute);
++      return String(value || '');
++    }
++  }
++
++  return String(await this.uiautomator2.jwproxy.command(`/element/${elementId}/attribute/${attribute}`, 'GET', {}));
+ }
+ 
+ /**
+@@ -39,10 +40,7 @@
+  * @param elementId - ID of the element.
+  * @returns True if the element is displayed, false otherwise.
+  */
+-export async function elementDisplayed(
+-  this: AndroidUiautomator2Driver,
+-  elementId: string,
+-): Promise<boolean> {
++export async function elementDisplayed(this: AndroidUiautomator2Driver, elementId: string): Promise<boolean> {
+   return toBool(await this.getAttribute('displayed', elementId));
+ }
+ 
+@@ -51,10 +49,7 @@
+  * @param elementId - ID of the element.
+  * @returns True if the element is enabled, false otherwise.
+  */
+-export async function elementEnabled(
+-  this: AndroidUiautomator2Driver,
+-  elementId: string,
+-): Promise<boolean> {
++export async function elementEnabled(this: AndroidUiautomator2Driver, elementId: string): Promise<boolean> {
+   return toBool(await this.getAttribute('enabled', elementId));
+ }
+ 
+@@ -63,10 +58,7 @@
+  * @param elementId - ID of the element.
+  * @returns True if the element is selected, false otherwise.
+  */
+-export async function elementSelected(
+-  this: AndroidUiautomator2Driver,
+-  elementId: string,
+-): Promise<boolean> {
++export async function elementSelected(this: AndroidUiautomator2Driver, elementId: string): Promise<boolean> {
+   return toBool(await this.getAttribute('selected', elementId));
+ }
+ 
+@@ -76,11 +68,18 @@
+  * @returns The element tag name.
+  */
+ export async function getName(this: AndroidUiautomator2Driver, elementId: string): Promise<string> {
+-  return (await this.uiautomator2.jwproxy.command(
+-    `/element/${elementId}/name`,
+-    'GET',
+-    {},
+-  )) as string;
++  // Check if we're using CDP context manager for web context
++  const cdpManager = (this as any).cdpContextManager;
++  if (cdpManager && cdpManager.getCurrentContext() !== 'NATIVE_APP') {
++    const cdpClient = cdpManager.getCurrentCDPClient();
++    if (cdpClient) {
++      this.log.info(`[CDP] Getting tag name for element ${elementId}`);
++      const tagName = await cdpClient.getElementAttribute(elementId, 'tagName');
++      return String(tagName || '').toLowerCase();
++    }
++  }
++
++  return (await this.uiautomator2.jwproxy.command(`/element/${elementId}/name`, 'GET', {})) as string;
+ }
+ 
+ /**
+@@ -88,15 +87,19 @@
+  * @param elementId - ID of the element.
+  * @returns The element position coordinates (x, y).
+  */
+-export async function getLocation(
+-  this: AndroidUiautomator2Driver,
+-  elementId: string,
+-): Promise<Position> {
+-  return (await this.uiautomator2.jwproxy.command(
+-    `/element/${elementId}/location`,
+-    'GET',
+-    {},
+-  )) as Position;
++export async function getLocation(this: AndroidUiautomator2Driver, elementId: string): Promise<Position> {
++  // Check if we're using CDP context manager for web context
++  const cdpManager = (this as any).cdpContextManager;
++  if (cdpManager && cdpManager.getCurrentContext() !== 'NATIVE_APP') {
++    const cdpClient = cdpManager.getCurrentCDPClient();
++    if (cdpClient) {
++      this.log.info(`[CDP] Getting location for element ${elementId}`);
++      const rect = await cdpClient.getElementRect(elementId);
++      return { x: rect.x, y: rect.y };
++    }
++  }
++
++  return (await this.uiautomator2.jwproxy.command(`/element/${elementId}/location`, 'GET', {})) as Position;
+ }
+ 
+ /**
+@@ -105,6 +108,17 @@
+  * @returns The element size (width, height).
+  */
+ export async function getSize(this: AndroidUiautomator2Driver, elementId: string): Promise<Size> {
++  // Check if we're using CDP context manager for web context
++  const cdpManager = (this as any).cdpContextManager;
++  if (cdpManager && cdpManager.getCurrentContext() !== 'NATIVE_APP') {
++    const cdpClient = cdpManager.getCurrentCDPClient();
++    if (cdpClient) {
++      this.log.info(`[CDP] Getting size for element ${elementId}`);
++      const rect = await cdpClient.getElementRect(elementId);
++      return { width: rect.width, height: rect.height };
++    }
++  }
++
+   return (await this.uiautomator2.jwproxy.command(`/element/${elementId}/size`, 'GET', {})) as Size;
+ }
+ 
+@@ -112,10 +126,19 @@
+  * Sets the value of an element using the upstream driver API.
+  * @param params - Options containing the element ID and value to set.
+  */
+-export async function doSetElementValue(
+-  this: AndroidUiautomator2Driver,
+-  params: DoSetElementValueOpts,
+-): Promise<void> {
++export async function doSetElementValue(this: AndroidUiautomator2Driver, params: DoSetElementValueOpts): Promise<void> {
++  // Check if we're using CDP context manager for web context
++  const cdpManager = (this as any).cdpContextManager;
++  if (cdpManager && cdpManager.getCurrentContext() !== 'NATIVE_APP') {
++    const cdpClient = cdpManager.getCurrentCDPClient();
++    if (cdpClient) {
++      this.log.info(`[CDP] Setting value for element ${params.elementId}`);
++      const text = Array.isArray(params.text) ? params.text.join('') : params.text;
++      await cdpClient.sendKeys(params.elementId, text);
++      return;
++    }
++  }
++
+   await this.uiautomator2.jwproxy.command(`/element/${params.elementId}/value`, 'POST', params);
+ }
+ 
+@@ -129,6 +152,18 @@
+   keys: string | string[],
+   elementId: string,
+ ): Promise<void> {
++  // Check if we're using CDP context manager for web context
++  const cdpManager = (this as any).cdpContextManager;
++  if (cdpManager && cdpManager.getCurrentContext() !== 'NATIVE_APP') {
++    const cdpClient = cdpManager.getCurrentCDPClient();
++    if (cdpClient) {
++      this.log.info(`[CDP] Setting value immediate for element ${elementId}`);
++      const text = _.isArray(keys) ? keys.join('') : keys;
++      await cdpClient.sendKeys(elementId, text);
++      return;
++    }
++  }
++
+   await this.uiautomator2.jwproxy.command(`/element/${elementId}/value`, 'POST', {
+     elementId,
+     text: _.isArray(keys) ? keys.join('') : keys,
+@@ -142,6 +177,16 @@
+  * @returns The element text content.
+  */
+ export async function getText(this: AndroidUiautomator2Driver, elementId: string): Promise<string> {
++  // Check if we're using CDP context manager for web context
++  const cdpManager = (this as any).cdpContextManager;
++  if (cdpManager && cdpManager.getCurrentContext() !== 'NATIVE_APP') {
++    const cdpClient = cdpManager.getCurrentCDPClient();
++    if (cdpClient) {
++      this.log.info(`[CDP] Getting text for element ${elementId}`);
++      return await cdpClient.getElementText(elementId);
++    }
++  }
++
+   return String(await this.uiautomator2.jwproxy.command(`/element/${elementId}/text`, 'GET', {}));
+ }
+ 
+@@ -150,7 +195,18 @@
+  * @param element - ID of the element to click.
+  */
+ export async function click(this: AndroidUiautomator2Driver, element: string): Promise<void> {
+-  await this.uiautomator2.jwproxy.command(`/element/${element}/click`, 'POST', {element});
++  // Check if we're using CDP context manager for web context
++  const cdpManager = (this as any).cdpContextManager;
++  if (cdpManager && cdpManager.getCurrentContext() !== 'NATIVE_APP') {
++    const cdpClient = cdpManager.getCurrentCDPClient();
++    if (cdpClient) {
++      this.log.info(`[CDP] Clicking element via CDP: ${element}`);
++      await cdpClient.clickElement(element);
++      return;
++    }
++  }
++
++  await this.uiautomator2.jwproxy.command(`/element/${element}/click`, 'POST', { element });
+ }
+ 
+ /**
+@@ -158,13 +214,8 @@
+  * @param element - ID of the element.
+  * @returns Base64-encoded PNG screenshot of the element.
+  */
+-export async function getElementScreenshot(
+-  this: AndroidUiautomator2Driver,
+-  element: string,
+-): Promise<string> {
+-  return String(
+-    await this.uiautomator2.jwproxy.command(`/element/${element}/screenshot`, 'GET', {}),
+-  );
++export async function getElementScreenshot(this: AndroidUiautomator2Driver, element: string): Promise<string> {
++  return String(await this.uiautomator2.jwproxy.command(`/element/${element}/screenshot`, 'GET', {}));
+ }
+ 
+ /**
+@@ -172,7 +223,18 @@
+  * @param elementId - ID of the element to clear.
+  */
+ export async function clear(this: AndroidUiautomator2Driver, elementId: string): Promise<void> {
+-  await this.uiautomator2.jwproxy.command(`/element/${elementId}/clear`, 'POST', {elementId});
++  // Check if we're using CDP context manager for web context
++  const cdpManager = (this as any).cdpContextManager;
++  if (cdpManager && cdpManager.getCurrentContext() !== 'NATIVE_APP') {
++    const cdpClient = cdpManager.getCurrentCDPClient();
++    if (cdpClient) {
++      this.log.info(`[CDP] Clearing element ${elementId}`);
++      await cdpClient.clearElement(elementId);
++      return;
++    }
++  }
++
++  await this.uiautomator2.jwproxy.command(`/element/${elementId}/clear`, 'POST', { elementId });
+ }
+ 
+ /**
+@@ -180,21 +242,28 @@
+  * @param elementId - ID of the element.
+  * @returns The element rectangle (x, y, width, height).
+  */
+-export async function getElementRect(
+-  this: AndroidUiautomator2Driver,
+-  elementId: string,
+-): Promise<Rect> {
++export async function getElementRect(this: AndroidUiautomator2Driver, elementId: string): Promise<Rect> {
++  // Check if we're using CDP context manager for web context
++  const cdpManager = (this as any).cdpContextManager;
++  if (cdpManager && cdpManager.getCurrentContext() !== 'NATIVE_APP') {
++    const cdpClient = cdpManager.getCurrentCDPClient();
++    if (cdpClient) {
++      this.log.info(`[CDP] Getting rect for element ${elementId}`);
++      return await cdpClient.getElementRect(elementId);
++    }
++  }
++
+   if (!this.isWebContext()) {
+     return (await this.uiautomator2.jwproxy.command(`/element/${elementId}/rect`, 'GET')) as Rect;
+   }
+ 
+   const chromedriver = this.chromedriver as Chromedriver;
+   if (chromedriver.jwproxy.downstreamProtocol === PROTOCOLS.MJSONWP) {
+-    const [{x, y}, {width, height}] = (await B.all([
++    const [{ x, y }, { width, height }] = (await B.all([
+       chromedriver.jwproxy.command(`/element/${elementId}/location`, 'GET'),
+       chromedriver.jwproxy.command(`/element/${elementId}/size`, 'GET'),
+     ])) as [Position, Size];
+-    return {x, y, width, height};
++    return { x, y, width, height };
+   }
+   return (await chromedriver.jwproxy.command(`/element/${elementId}/rect`, 'GET')) as Rect;
+ }
+@@ -218,3 +287,4 @@
+ function toBool(value: any): boolean {
+   return _.isString(value) ? value.toLowerCase() === 'true' : !!value;
+ }
++
+diff -ru --ex /Users/obilyk/.appium/node_modules/appium-uiautomator2-driver/lib/commands/find.ts /Users/obilyk/WebstormProjects/appium-uiautomator2-driver/lib/commands/find.ts
+--- /Users/obilyk/.appium/node_modules/appium-uiautomator2-driver/lib/commands/find.ts	2026-04-28 14:02:15
++++ /Users/obilyk/WebstormProjects/appium-uiautomator2-driver/lib/commands/find.ts	2026-04-14 17:25:33
+@@ -1,7 +1,7 @@
+-import {CssConverter} from '../css-converter';
+-import type {Element as AppiumElement} from '@appium/types';
+-import type {FindElementOpts} from 'appium-android-driver';
+-import type {AndroidUiautomator2Driver} from '../driver';
++import { CssConverter } from '../css-converter';
++import type { Element as AppiumElement } from '@appium/types';
++import type { FindElementOpts } from 'appium-android-driver';
++import type { AndroidUiautomator2Driver } from '../driver';
+ 
+ // we override the xpath search for this first-visible-child selector, which
+ // looks like /*[@firstVisible="true"]
+@@ -18,24 +18,53 @@
+  */
+ export async function doFindElementOrEls(
+   this: AndroidUiautomator2Driver,
+-  params: FindElementOpts & {multiple: true},
++  params: FindElementOpts & { multiple: true },
+ ): Promise<AppiumElement[]>;
+ export async function doFindElementOrEls(
+   this: AndroidUiautomator2Driver,
+-  params: FindElementOpts & {multiple: false},
++  params: FindElementOpts & { multiple: false },
+ ): Promise<AppiumElement>;
+ export async function doFindElementOrEls(
+   this: AndroidUiautomator2Driver,
+   params: FindElementOpts,
+ ): Promise<AppiumElement | AppiumElement[]> {
++  // Check if we're using CDP context manager for web context
++  const cdpManager = (this as any).cdpContextManager;
++  const isWebContext = cdpManager && cdpManager.getCurrentContext() !== 'NATIVE_APP';
++
++  // Check for native-only locator strategies
++  const isNativeOnlyStrategy = params.strategy === '-android uiautomator';
++
++  if (isWebContext && isNativeOnlyStrategy) {
++    // UiAutomator locators don't work in webview contexts
++    throw new Error(
++      `The locator strategy '${params.strategy}' is only supported in NATIVE_APP context. ` +
++      `Current context is '${cdpManager.getCurrentContext()}'. ` +
++      `Please switch to NATIVE_APP context or use a web-compatible locator strategy (xpath, css selector, id, etc.).`
++    );
++  }
++
++  if (isWebContext) {
++    const cdpClient = cdpManager.getCurrentCDPClient();
++    if (cdpClient) {
++      this.log.info(`[CDP] Finding element(s) via CDP with strategy '${params.strategy}' and selector '${params.selector}'`);
++      try {
++        if (params.multiple) {
++          return await cdpClient.findElementsByStrategy(params.strategy, params.selector);
++        } else {
++          return await cdpClient.findElementByStrategy(params.strategy, params.selector);
++        }
++      } catch (e) {
++        this.log.error(`[CDP] Failed to find element: ${e.message}`);
++        throw e;
++      }
++    }
++  }
++
+   const uiautomator2 = this.uiautomator2;
+   if (params.strategy === 'xpath' && MAGIC_FIRST_VIS_CHILD_SEL.test(params.selector)) {
+     const elementId = params.context;
+-    return (await uiautomator2.jwproxy.command(
+-      `/appium/element/${elementId}/first_visible`,
+-      'GET',
+-      {},
+-    )) as AppiumElement;
++    return (await uiautomator2.jwproxy.command(`/appium/element/${elementId}/first_visible`, 'GET', {})) as AppiumElement;
+   }
+   if (params.strategy === 'xpath' && MAGIC_SCROLLABLE_SEL.test(params.selector)) {
+     params.strategy = '-android uiautomator';
+@@ -43,14 +72,10 @@
+   }
+   if (params.strategy === 'css selector') {
+     params.strategy = '-android uiautomator';
+-    params.selector = new CssConverter(
+-      params.selector,
+-      this.opts.appPackage,
+-    ).toUiAutomatorSelector();
++    params.selector = new CssConverter(params.selector, this.opts.appPackage).toUiAutomatorSelector();
+   }
+-  return (await uiautomator2.jwproxy.command(
+-    `/element${params.multiple ? 's' : ''}`,
+-    'POST',
+-    params,
+-  )) as AppiumElement | AppiumElement[];
++  return (await uiautomator2.jwproxy.command(`/element${params.multiple ? 's' : ''}`, 'POST', params)) as
++    | AppiumElement
++    | AppiumElement[];
+ }
++
+diff -ru --ex /Users/obilyk/.appium/node_modules/appium-uiautomator2-driver/lib/commands/gestures.ts /Users/obilyk/WebstormProjects/appium-uiautomator2-driver/lib/commands/gestures.ts
+--- /Users/obilyk/.appium/node_modules/appium-uiautomator2-driver/lib/commands/gestures.ts	2026-04-28 14:02:15
++++ /Users/obilyk/WebstormProjects/appium-uiautomator2-driver/lib/commands/gestures.ts	2026-04-14 16:53:50
+@@ -248,9 +248,7 @@
+   elementToId?: string,
+ ): Promise<void> {
+   if (!elementId || !elementToId) {
+-    throw new errors.InvalidArgumentError(
+-      `Both elementId and elementToId arguments must be provided`,
+-    );
++    throw new errors.InvalidArgumentError(`Both elementId and elementToId arguments must be provided`);
+   }
+   await this.uiautomator2.jwproxy.command(
+     `/appium/element/${util.unwrapElement(elementId)}/scroll_to/${util.unwrapElement(elementToId)}`,
+@@ -291,13 +289,9 @@
+   return _.isFinite(x) && _.isFinite(y) ? {x, y} : undefined;
+ }
+ 
+-function toRect(
+-  left?: number,
+-  top?: number,
+-  width?: number,
+-  height?: number,
+-): RelativeRect | undefined {
++function toRect(left?: number, top?: number, width?: number, height?: number): RelativeRect | undefined {
+   return [left, top, width, height].some((v) => !_.isFinite(v))
+     ? undefined
+     : ({left, top, width, height} as RelativeRect);
+ }
++
+diff -ru --ex /Users/obilyk/.appium/node_modules/appium-uiautomator2-driver/lib/commands/keyboard.ts /Users/obilyk/WebstormProjects/appium-uiautomator2-driver/lib/commands/keyboard.ts
+--- /Users/obilyk/.appium/node_modules/appium-uiautomator2-driver/lib/commands/keyboard.ts	2026-04-28 14:02:15
++++ /Users/obilyk/WebstormProjects/appium-uiautomator2-driver/lib/commands/keyboard.ts	2026-04-14 16:53:50
+@@ -42,14 +42,11 @@
+ }
+ 
+ /**
+- * Presses a key code with optional metastate, flags, source, and long press support.
++ * Presses a key code with optional metastate, flags, and long press support.
+  * @param keycode - Android key code to press.
+  * @param metastate - Optional meta state modifier keys.
+  * @param flags - Optional flags for the key event.
+  * @param isLongPress - Whether to perform a long press. Defaults to false.
+- * @param source - Optional input device source. One or more InputDevice.SOURCE_* values (default is SOURCE_KEYBOARD).
+- *                 Multiple source values can be combined using the logical OR operator.
+- *                 See https://developer.android.com/reference/android/view/InputDevice for details.
+  */
+ export async function mobilePressKey(
+   this: AndroidUiautomator2Driver,
+@@ -57,18 +54,12 @@
+   metastate?: number,
+   flags?: string,
+   isLongPress: boolean = false,
+-  source?: number,
+ ): Promise<void> {
+-  await this.uiautomator2.jwproxy.command(
+-    `/appium/device/${isLongPress ? 'long_' : ''}press_keycode`,
+-    'POST',
+-    {
+-      keycode,
+-      metastate,
+-      flags,
+-      source,
+-    },
+-  );
++  await this.uiautomator2.jwproxy.command(`/appium/device/${isLongPress ? 'long_' : ''}press_keycode`, 'POST', {
++    keycode,
++    metastate,
++    flags,
++  });
+ }
+ 
+ /**
+@@ -91,10 +82,7 @@
+  * Sends keys to the current element.
+  * @param params - Options containing the text to send and optional replace flag.
+  */
+-export async function doSendKeys(
+-  this: AndroidUiautomator2Driver,
+-  params: SendKeysOpts,
+-): Promise<void> {
++export async function doSendKeys(this: AndroidUiautomator2Driver, params: SendKeysOpts): Promise<void> {
+   await this.uiautomator2.jwproxy.command('/keys', 'POST', params);
+ }
+ 
+@@ -111,3 +99,4 @@
+   this.log.debug(`Ignoring metastate ${metastate}`);
+   await this.adb.keyevent(keycode);
+ }
++
+diff -ru --ex /Users/obilyk/.appium/node_modules/appium-uiautomator2-driver/lib/commands/misc.ts /Users/obilyk/WebstormProjects/appium-uiautomator2-driver/lib/commands/misc.ts
+--- /Users/obilyk/.appium/node_modules/appium-uiautomator2-driver/lib/commands/misc.ts	2026-04-28 14:02:15
++++ /Users/obilyk/WebstormProjects/appium-uiautomator2-driver/lib/commands/misc.ts	2026-04-14 16:53:50
+@@ -26,9 +26,7 @@
+   orientation: Orientation,
+ ): Promise<void> {
+   const normalizedOrientation = orientation.toUpperCase() as Orientation;
+-  await this.uiautomator2.jwproxy.command(`/orientation`, 'POST', {
+-    orientation: normalizedOrientation,
+-  });
++  await this.uiautomator2.jwproxy.command(`/orientation`, 'POST', {orientation: normalizedOrientation});
+ }
+ 
+ /**
+@@ -63,8 +61,7 @@
+ /**
+  * Resets the accessibility cache on the device.
+  */
+-export async function mobileResetAccessibilityCache(
+-  this: AndroidUiautomator2Driver,
+-): Promise<void> {
++export async function mobileResetAccessibilityCache(this: AndroidUiautomator2Driver): Promise<void> {
+   await this.uiautomator2.jwproxy.command('/appium/reset_ax_cache', 'POST', {});
+ }
++
+diff -ru --ex /Users/obilyk/.appium/node_modules/appium-uiautomator2-driver/lib/commands/navigation.ts /Users/obilyk/WebstormProjects/appium-uiautomator2-driver/lib/commands/navigation.ts
+--- /Users/obilyk/.appium/node_modules/appium-uiautomator2-driver/lib/commands/navigation.ts	2026-04-28 14:02:15
++++ /Users/obilyk/WebstormProjects/appium-uiautomator2-driver/lib/commands/navigation.ts	2026-04-14 16:53:50
+@@ -29,3 +29,4 @@
+ export async function back(this: AndroidUiautomator2Driver): Promise<void> {
+   await this.adb.keyevent(4);
+ }
++
+diff -ru --ex /Users/obilyk/.appium/node_modules/appium-uiautomator2-driver/lib/commands/screenshot.ts /Users/obilyk/WebstormProjects/appium-uiautomator2-driver/lib/commands/screenshot.ts
+--- /Users/obilyk/.appium/node_modules/appium-uiautomator2-driver/lib/commands/screenshot.ts	2026-04-28 14:02:15
++++ /Users/obilyk/WebstormProjects/appium-uiautomator2-driver/lib/commands/screenshot.ts	2026-04-14 16:53:50
+@@ -8,8 +8,7 @@
+ // Matches SurfaceFlinger output format:
+ // Physical: Display 4619827259835644672 (HWC display 0): port=0 pnpId=GGL displayName="EMU_display_0"
+ // Virtual: Display 11529215049243506835 (Virtual display): displayName="Emulator 2D Display" uniqueId="..."
+-const DISPLAY_PATTERN =
+-  /^Display\s+(\d+)\s+\((?:HWC\s+display\s+(\d+)|Virtual\s+display)\):.*?displayName="([^"]*)"/gm;
++const DISPLAY_PATTERN = /^Display\s+(\d+)\s+\((?:HWC\s+display\s+(\d+)|Virtual\s+display)\):.*?displayName="([^"]*)"/gm;
+ 
+ /**
+  * Parses SurfaceFlinger display output to extract display information.
+@@ -17,7 +16,7 @@
+  * @returns A record mapping display IDs to their information (without payload)
+  */
+ export function parseSurfaceFlingerDisplays(
+-  displaysInfo: string,
++  displaysInfo: string
+ ): Record<string, Partial<Screenshot>> {
+   const infos: Record<string, Partial<Screenshot>> = {};
+   const lines = displaysInfo.split('\n');
+@@ -30,10 +29,9 @@
+       const [, matchedDisplayId, hwcId, displayName] = match; // Skip match[0] (full match), then Display ID, HWC ID (optional), Display name
+ 
+       // Determine if default: HWC display 0 is default, or first physical display if no HWC info
+-      const isDefault =
+-        hwcId !== undefined
+-          ? hwcId === '0'
+-          : !line.includes('Virtual') && Object.keys(infos).length === 0;
++      const isDefault = hwcId !== undefined
++        ? hwcId === '0'
++        : !line.includes('Virtual') && Object.keys(infos).length === 0;
+ 
+       infos[matchedDisplayId] = {
+         id: matchedDisplayId,
+@@ -52,14 +50,18 @@
+ /**
+  * Takes a screenshot of the current viewport
+  */
+-export async function mobileViewportScreenshot(this: AndroidUiautomator2Driver): Promise<string> {
++export async function mobileViewportScreenshot(
++  this: AndroidUiautomator2Driver
++): Promise<string> {
+   return await this.getViewportScreenshot();
+ }
+ 
+ /**
+  * Gets a screenshot of the current viewport
+  */
+-export async function getViewportScreenshot(this: AndroidUiautomator2Driver): Promise<string> {
++export async function getViewportScreenshot(
++  this: AndroidUiautomator2Driver
++): Promise<string> {
+   const screenshot = await this.getScreenshot();
+   const rect = await this.getViewPortRect();
+   return await imageUtil.cropBase64Image(screenshot, rect);
+@@ -68,7 +70,9 @@
+ /**
+  * Gets a screenshot of the current screen
+  */
+-export async function getScreenshot(this: AndroidUiautomator2Driver): Promise<string> {
++export async function getScreenshot(
++  this: AndroidUiautomator2Driver
++): Promise<string> {
+   if (this.mjpegStream) {
+     const data = await this.mjpegStream.lastChunkPNGBase64();
+     if (data) {
+@@ -76,10 +80,12 @@
+     }
+     this.log.warn(
+       'Tried to get screenshot from active MJPEG stream, but there ' +
+-        'was no data yet. Falling back to regular screenshot methods.',
++        'was no data yet. Falling back to regular screenshot methods.'
+     );
+   }
+-  return String(await this.uiautomator2.jwproxy.command('/screenshot', 'GET'));
++  return String(
++    await this.uiautomator2.jwproxy.command('/screenshot', 'GET')
++  );
+ }
+ 
+ /**
+@@ -91,9 +97,13 @@
+  */
+ export async function mobileScreenshots(
+   this: AndroidUiautomator2Driver,
+-  displayId?: number | string,
++  displayId?: number | string
+ ): Promise<StringRecord<Screenshot>> {
+-  const displaysInfo = await this.adb.shell(['dumpsys', 'SurfaceFlinger', '--display-id']);
++  const displaysInfo = await this.adb.shell([
++    'dumpsys',
++    'SurfaceFlinger',
++    '--display-id',
++  ]);
+   const infos = parseSurfaceFlingerDisplays(displaysInfo);
+   if (_.isEmpty(infos)) {
+     this.log.debug(displaysInfo);
+@@ -105,13 +115,15 @@
+     (await this.adb.takeScreenshot(dispId)).toString('base64');
+ 
+   const displayIdStr: string | null =
+-    _.isNil(displayId) || displayId === '' ? null : String(displayId);
++    _.isNil(displayId) || displayId === ''
++      ? null
++      : String(displayId);
+ 
+   if (displayIdStr) {
+     if (!infos[displayIdStr]) {
+       throw new Error(
+         `The provided display identifier '${displayId}' is not known. ` +
+-          `Only the following displays have been detected: ${JSON.stringify(infos)}`,
++          `Only the following displays have been detected: ${JSON.stringify(infos)}`
+       );
+     }
+     return {
+@@ -122,16 +134,13 @@
+     };
+   }
+ 
+-  const allInfos = _.values(infos).filter(
+-    (info): info is Partial<Screenshot> & {id: string} => !!info?.id,
+-  );
++  const allInfos = _.values(infos).filter((info): info is Partial<Screenshot> & {id: string} => !!info?.id);
+   const screenshots = await B.all(allInfos.map((info) => toB64Screenshot(info.id)));
+-  for (const [info, payload] of _.zip(allInfos, screenshots) as Array<
+-    [Partial<Screenshot>, string]
+-  >) {
++  for (const [info, payload] of _.zip(allInfos, screenshots) as Array<[Partial<Screenshot>, string]>) {
+     if (info && payload) {
+       info.payload = payload;
+     }
+   }
+   return infos as StringRecord<Screenshot>;
+ }
++
+diff -ru --ex /Users/obilyk/.appium/node_modules/appium-uiautomator2-driver/lib/commands/viewport.ts /Users/obilyk/WebstormProjects/appium-uiautomator2-driver/lib/commands/viewport.ts
+--- /Users/obilyk/.appium/node_modules/appium-uiautomator2-driver/lib/commands/viewport.ts	2026-04-28 14:02:15
++++ /Users/obilyk/WebstormProjects/appium-uiautomator2-driver/lib/commands/viewport.ts	2026-04-14 17:25:33
+@@ -1,17 +1,16 @@
+-import type {Rect, Size} from '@appium/types';
+-import type {AndroidUiautomator2Driver} from '../driver';
+-import type {RelativeRect} from './types';
++import type { Rect, Size } from '@appium/types';
++import type { AndroidUiautomator2Driver } from '../driver';
++import type { RelativeRect } from './types';
+ 
+ /**
+  * Gets the status bar height in pixels.
+  * @returns The status bar height in pixels.
+  */
+ export async function getStatusBarHeight(this: AndroidUiautomator2Driver): Promise<number> {
+-  const {statusBar} = (await this.uiautomator2.jwproxy.command(
+-    `/appium/device/system_bars`,
+-    'GET',
+-    {},
+-  )) as {
++  if (this.opts.appPackage === 'com.oculus.browser') {
++    return 0;
++  }
++  const { statusBar } = (await this.uiautomator2.jwproxy.command(`/appium/device/system_bars`, 'GET', {})) as {
+     statusBar: number;
+   };
+   return statusBar;
+@@ -30,7 +29,91 @@
+  * @returns The viewport rectangle (left, top, width, height), accounting for status bar height.
+  */
+ export async function getViewPortRect(this: AndroidUiautomator2Driver): Promise<RelativeRect> {
+-  const windowSize = await this.getWindowSize();
++  let deviceScreenSize = await this.getWindowSize();
++
++  // For Oculus Browser, use CDP to get actual page dimensions
++  if (this.opts.appPackage === 'com.oculus.browser') {
++    const cdpManager = (this as any).cdpContextManager;
++
++    // First, try to use cached dimensions if available
++    const cachedDimensions = cdpManager?.getCachedViewportDimensions();
++    if (cachedDimensions) {
++      this.log.info(`[CDP] Using cached viewport dimensions: ${cachedDimensions.width}x${cachedDimensions.height}`);
++      deviceScreenSize = cachedDimensions;
++    } else {
++      // No cache, need to get from CDP
++      const cdpClient = cdpManager?.getAnyCDPClient();
++      if (cdpClient) {
++        // Retry logic for page load - CDP may return 0 dimensions initially
++        let attempts = 0;
++        const maxAttempts = 5;
++        const delayMs = 1000;
++
++        this.log.info('[CDP] Attempting to retrieve viewport dimensions from CDP...');
++
++        while (attempts < maxAttempts) {
++          try {
++            // Reconnect if not connected
++            if (!cdpClient.isConnected()) {
++              this.log.info(`[CDP] CDP client not connected, attempting to reconnect...`);
++              if (cdpManager) {
++                const contexts = await cdpManager.getContexts();
++                const webviewContext = contexts.find((c: string) => c.startsWith('WEBVIEW_'));
++                if (webviewContext) {
++                  const savedContext = cdpManager.currentContext;
++                  await cdpManager.setContext(webviewContext);
++                  // Get dimensions while connected
++                  const rect = await cdpClient.getWindowRect();
++                  const width = rect.width;
++                  const height = rect.height;
++                  // Switch back to original context
++                  await cdpManager.setContext(savedContext);
++
++                  if (!isNaN(width) && !isNaN(height) && width > 0 && height > 0) {
++                    this.log.info(`[CDP] Successfully retrieved viewport dimensions: ${width}x${height}`);
++                    cdpManager.updateCachedViewportDimensions(width, height);
++                    deviceScreenSize = { width, height };
++                    break;
++                  }
++                }
++              }
++            } else {
++              const rect = await cdpClient.getWindowRect();
++              const width = rect.width;
++              const height = rect.height;
++
++              this.log.info(`[CDP] Attempt ${attempts + 1}/${maxAttempts}: Got dimensions ${width}x${height}`);
++
++              if (!isNaN(width) && !isNaN(height) && width > 0 && height > 0) {
++                this.log.info(`[CDP] Successfully retrieved viewport dimensions: ${width}x${height}`);
++                cdpManager.updateCachedViewportDimensions(width, height);
++                deviceScreenSize = { width, height };
++                break;
++              }
++            }
++
++            // Invalid dimensions, wait and retry
++            attempts++;
++            if (attempts < maxAttempts) {
++              this.log.info(`[CDP] Invalid dimensions, waiting ${delayMs}ms before retry...`);
++              await new Promise(resolve => setTimeout(resolve, delayMs));
++            }
++          } catch (e) {
++            this.log.warn(`[CDP] Attempt ${attempts + 1} failed: ${e.message}`);
++            attempts++;
++            if (attempts < maxAttempts) {
++              await new Promise(resolve => setTimeout(resolve, delayMs));
++            } else {
++              this.log.warn(`[CDP] Failed to get CDP viewport after ${maxAttempts} attempts: ${e.message}`);
++            }
++          }
++        }
++      } else {
++        this.log.warn('[CDP] CDP client not available, falling back to device dimensions');
++      }
++    }
++  }
++  const windowSize = deviceScreenSize;
+   const statusBarHeight = await this.getStatusBarHeight();
+   // android returns the upscaled window size, so to get the true size of the
+   // rect we have to downscale
+@@ -55,7 +138,7 @@
+  * @returns The window rectangle (x, y, width, height).
+  */
+ export async function getWindowRect(this: AndroidUiautomator2Driver): Promise<Rect> {
+-  const {width, height} = await this.getWindowSize();
++  const { width, height } = await this.getWindowSize();
+   return {
+     width,
+     height,
+@@ -69,11 +152,7 @@
+  * @returns The display density value.
+  */
+ export async function getDisplayDensity(this: AndroidUiautomator2Driver): Promise<number> {
+-  return (await this.uiautomator2.jwproxy.command(
+-    '/appium/device/display_density',
+-    'GET',
+-    {},
+-  )) as number;
++  return (await this.uiautomator2.jwproxy.command('/appium/device/display_density', 'GET', {})) as number;
+ }
+ 
+ /**
+@@ -83,3 +162,4 @@
+ export async function getWindowSize(this: AndroidUiautomator2Driver): Promise<Size> {
+   return (await this.uiautomator2.jwproxy.command('/window/current/size', 'GET', {})) as Size;
+ }
++
+diff -ru --ex /Users/obilyk/.appium/node_modules/appium-uiautomator2-driver/lib/commands/windows.ts /Users/obilyk/WebstormProjects/appium-uiautomator2-driver/lib/commands/windows.ts
+--- /Users/obilyk/.appium/node_modules/appium-uiautomator2-driver/lib/commands/windows.ts	2026-04-28 14:02:15
++++ /Users/obilyk/WebstormProjects/appium-uiautomator2-driver/lib/commands/windows.ts	2026-04-14 16:53:50
+@@ -9,21 +9,27 @@
+ export async function mobileListWindows(
+   this: AndroidUiautomator2Driver,
+   filters?: WindowFilters,
+-  skipScreenshots?: boolean,
++  skipScreenshots?: boolean
+ ): Promise<WindowInfo[]> {
+-  return (await this.uiautomator2.jwproxy.command('/appium/list_windows', 'POST', {
+-    filters,
+-    skipScreenshots,
+-  })) as WindowInfo[];
++  return await this.uiautomator2.jwproxy.command(
++    '/appium/list_windows',
++    'POST',
++    {
++      filters,
++      skipScreenshots,
++    }
++  ) as WindowInfo[];
+ }
+ 
+ /**
+  * Gets a list of all displays available on the device.
+  */
+-export async function mobileListDisplays(this: AndroidUiautomator2Driver): Promise<DisplayInfo[]> {
+-  return (await this.uiautomator2.jwproxy.command(
++export async function mobileListDisplays(
++  this: AndroidUiautomator2Driver
++): Promise<DisplayInfo[]> {
++  return await this.uiautomator2.jwproxy.command(
+     '/appium/list_displays',
+     'POST',
+-    {},
+-  )) as DisplayInfo[];
++    {}
++  ) as DisplayInfo[];
+ }
+diff -ru --ex /Users/obilyk/.appium/node_modules/appium-uiautomator2-driver/lib/constraints.ts /Users/obilyk/WebstormProjects/appium-uiautomator2-driver/lib/constraints.ts
+--- /Users/obilyk/.appium/node_modules/appium-uiautomator2-driver/lib/constraints.ts	2026-04-28 14:02:15
++++ /Users/obilyk/WebstormProjects/appium-uiautomator2-driver/lib/constraints.ts	2026-04-14 17:25:33
+@@ -35,6 +35,18 @@
+   shouldTerminateApp: {
+     isBoolean: true,
+   },
++  pwaPackage: {
++    isString: true,
++  },
++  url: {
++    isString: true,
++  },
++  skipDeviceAutoConnect: {
++    isBoolean: true,
++  },
++  useCDP: {
++    isBoolean: true,
++  },
+   ...commonCapConstraints,
+ } as const satisfies Constraints;
+ 
+diff -ru --ex /Users/obilyk/.appium/node_modules/appium-uiautomator2-driver/lib/css-converter.ts /Users/obilyk/WebstormProjects/appium-uiautomator2-driver/lib/css-converter.ts
+--- /Users/obilyk/.appium/node_modules/appium-uiautomator2-driver/lib/css-converter.ts	2026-04-28 14:02:15
++++ /Users/obilyk/WebstormProjects/appium-uiautomator2-driver/lib/css-converter.ts	2026-04-14 16:53:50
+@@ -56,14 +56,19 @@
+ 
+ const ATTRIBUTE_ALIASES: Array<[string, string[]]> = [
+   [RESOURCE_ID, ['id']],
+-  ['description', ['content-description', 'content-desc', 'desc', 'accessibility-id']],
++  [
++    'description',
++    ['content-description', 'content-desc', 'desc', 'accessibility-id'],
++  ],
+   ['index', ['nth-child']],
+ ];
+ 
+-const isAstAttribute = (item: {type?: string}): item is AstAttribute => item.type === 'Attribute';
++const isAstAttribute = (item: {type?: string}): item is AstAttribute =>
++  item.type === 'Attribute';
+ const isAstPseudoClass = (item: {type?: string}): item is AstPseudoClass =>
+   item.type === 'PseudoClass';
+-const isAstClassName = (item: {type?: string}): item is AstClassName => item.type === 'ClassName';
++const isAstClassName = (item: {type?: string}): item is AstClassName =>
++  item.type === 'ClassName';
+ const isAstTagName = (item: {type?: string}): item is AstTagName => item.type === 'TagName';
+ const isAstId = (item: {type?: string}): item is AstId => item.type === 'Id';
+ 
+@@ -87,7 +92,9 @@
+   if (value === 'false') {
+     return 'false';
+   }
+-  throw new Error(`'${css.name}' must be true, false or empty. Found '${(css as any).value}'`);
++  throw new Error(
++    `'${css.name}' must be true, false or empty. Found '${(css as any).value}'`,
++  );
+ }
+ 
+ function requireEntityName(cssEntity: AstAttribute | AstPseudoClass): string {
+@@ -152,10 +159,7 @@
+     const attrName = requireEntityName(cssAttr);
+     const methodName = toSnakeCase(attrName);
+ 
+-    if (
+-      !STR_ATTRS.includes(attrName as (typeof STR_ATTRS)[number]) &&
+-      !BOOLEAN_ATTRS.includes(attrName as (typeof BOOLEAN_ATTRS)[number])
+-    ) {
++    if (!STR_ATTRS.includes(attrName as (typeof STR_ATTRS)[number]) && !BOOLEAN_ATTRS.includes(attrName as (typeof BOOLEAN_ATTRS)[number])) {
+       throw new Error(
+         `'${attrName}' is not supported. Supported attributes are '${[...STR_ATTRS, ...BOOLEAN_ATTRS].join(', ')}'`,
+       );
+diff -ru --ex /Users/obilyk/.appium/node_modules/appium-uiautomator2-driver/lib/doctor/optional-checks.ts /Users/obilyk/WebstormProjects/appium-uiautomator2-driver/lib/doctor/optional-checks.ts
+--- /Users/obilyk/.appium/node_modules/appium-uiautomator2-driver/lib/doctor/optional-checks.ts	2026-04-28 14:02:15
++++ /Users/obilyk/WebstormProjects/appium-uiautomator2-driver/lib/doctor/optional-checks.ts	2026-04-14 16:53:50
+@@ -4,3 +4,4 @@
+ export const optionalBundletoolCheck: IDoctorCheck = doctor.optionalBundletoolCheck;
+ export const optionalGstreamerCheck: IDoctorCheck = doctor.optionalGstreamerCheck;
+ export const optionalFfmpegCheck: IDoctorCheck = doctor.optionalFfmpegCheck;
++
+diff -ru --ex /Users/obilyk/.appium/node_modules/appium-uiautomator2-driver/lib/doctor/required-checks.ts /Users/obilyk/WebstormProjects/appium-uiautomator2-driver/lib/doctor/required-checks.ts
+--- /Users/obilyk/.appium/node_modules/appium-uiautomator2-driver/lib/doctor/required-checks.ts	2026-04-28 14:02:15
++++ /Users/obilyk/WebstormProjects/appium-uiautomator2-driver/lib/doctor/required-checks.ts	2026-04-14 16:53:50
+@@ -5,3 +5,4 @@
+ export const javaHomeCheck: IDoctorCheck = doctor.javaHomeCheck;
+ export const javaHomeValueCheck: IDoctorCheck = doctor.javaHomeValueCheck;
+ export const androidSdkCheck: IDoctorCheck = doctor.androidSdkCheck;
++
+diff -ru --ex /Users/obilyk/.appium/node_modules/appium-uiautomator2-driver/lib/driver.ts /Users/obilyk/WebstormProjects/appium-uiautomator2-driver/lib/driver.ts
+--- /Users/obilyk/.appium/node_modules/appium-uiautomator2-driver/lib/driver.ts	2026-04-28 14:02:15
++++ /Users/obilyk/WebstormProjects/appium-uiautomator2-driver/lib/driver.ts	2026-04-24 16:42:27
+@@ -39,6 +39,7 @@
+ } from './types';
+ import {SERVER_PACKAGE_ID, SERVER_TEST_PACKAGE_ID, UiAutomator2Server} from './uiautomator2';
+ import type {UiAutomator2ServerOptions} from './uiautomator2';
++import {CDPContextManager} from './cdp-context-manager';
+ import {
+   mobileGetActionHistory,
+   mobileScheduleAction,
+@@ -242,6 +243,13 @@
+   ['POST', new RegExp('^/session/[^/]+/se/log$')],
+ ];
+ 
++// CDP-specific routes that should not be proxied to Chromedriver when using CDP (Oculus only)
++const CDP_NO_PROXY: RouteMatcher[] = [
++  ['GET', new RegExp('^/session/[^/]+/source$')],
++  ['GET', new RegExp('^/session/[^/]+/screenshot$')],
++  ['GET', new RegExp('^/session/[^/]+/window/rect$')],
++];
++
+ const MEMOIZED_FUNCTIONS = ['getStatusBarHeight', 'getDevicePixelRatio'] as const;
+ 
+ class AndroidUiautomator2Driver
+@@ -265,6 +273,8 @@
+ 
+   override desiredCapConstraints: Uiautomator2Constraints;
+ 
++  private cdpContextManager?: CDPContextManager;
++
+   constructor(opts: InitialOpts = {} as InitialOpts, shouldValidateCaps = true) {
+     // `shell` overwrites adb.shell, so remove
+     // @ts-expect-error FIXME: what is this?
+@@ -298,6 +308,239 @@
+     for (const fn of MEMOIZED_FUNCTIONS) {
+       this[fn] = _.memoize(this[fn]) as any;
+     }
++
++    // Helper method to check if CDP should be used for webview contexts
++    const shouldUseCDP = () => {
++      // Use CDP if explicitly enabled via capability
++      if (this.opts.useCDP === true) {
++        return true;
++      }
++      // For Oculus browser, always use CDP (legacy behavior)
++      if (this.opts.appPackage === 'com.oculus.browser') {
++        return true;
++      }
++      return false;
++    };
++
++    // Store original context methods before overriding for CDP support
++    const originalGetContexts = this.getContexts.bind(this);
++    const originalSetContext = this.setContext.bind(this);
++    const originalGetCurrentContext = this.getCurrentContext.bind(this);
++
++    // Override context methods to use CDP when useCDP capability is enabled
++    this.getContexts = async () => {
++      if (this.cdpContextManager && shouldUseCDP()) {
++        this.log.debug('[CDP] Using CDP context manager for getContexts');
++        return await this.cdpContextManager.getContexts();
++      }
++      return await originalGetContexts();
++    };
++
++    this.setContext = async (name?: string) => {
++      if (this.cdpContextManager && shouldUseCDP() && name) {
++        this.log.debug(`[CDP] Using CDP context manager for setContext: ${name}`);
++        await this.cdpContextManager.setContext(name);
++
++        // Update internal tracking
++        this.curContext = name;
++
++        // Disable proxy when in webview (CDP handles it directly)
++        if (name !== 'NATIVE_APP') {
++          this.jwpProxyActive = false;
++        } else {
++          this.jwpProxyActive = true;
++        }
++        return;
++      }
++      return await originalSetContext(name);
++    };
++
++    this.getCurrentContext = async () => {
++      if (this.cdpContextManager && shouldUseCDP()) {
++        return this.cdpContextManager.getCurrentContext() || 'NATIVE_APP';
++      }
++      return await originalGetCurrentContext();
++    };
++
++    // Store original execute method before overriding for CDP support
++    const originalExecute = this.execute.bind(this);
++
++    // Override execute to handle CDP script execution when useCDP is enabled
++    this.execute = async (script: string, args?: any) => {
++      // Check if this is a mobile: command
++      if (script.trim().startsWith('mobile:')) {
++        return await originalExecute(script, args);
++      }
++
++      // Check if we're in a CDP-managed webview context
++      if (this.cdpContextManager && shouldUseCDP() && this.curContext !== 'NATIVE_APP') {
++        this.log.debug('[CDP] Executing script via CDP');
++        const cdpClient = this.cdpContextManager.getCurrentCDPClient();
++        if (cdpClient) {
++          return await cdpClient.executeScriptWithArgs(script, args || []);
++        }
++      }
++
++      // Fall back to parent implementation (Chromedriver for regular webviews)
++      return await originalExecute(script, args);
++    };
++
++    // Store original getPageSource method before overriding for CDP support
++    const originalGetPageSource = this.getPageSource.bind(this);
++
++    // Override getPageSource to use CDP DOM tree when useCDP is enabled
++    this.getPageSource = async () => {
++      if (this.cdpContextManager && shouldUseCDP() && this.curContext !== 'NATIVE_APP') {
++        this.log.debug('[CDP] Getting DOM element tree via CDP');
++        const cdpClient = this.cdpContextManager.getCurrentCDPClient();
++        if (cdpClient) {
++          return await cdpClient.getDOMElementTree();
++        }
++      }
++      return await originalGetPageSource();
++    };
++
++    // Store original getScreenshot method before overriding for CDP support
++    const originalGetScreenshot = this.getScreenshot.bind(this);
++
++    // Override getScreenshot to use CDP when useCDP is enabled
++    this.getScreenshot = async () => {
++      if (this.cdpContextManager && shouldUseCDP() && this.curContext !== 'NATIVE_APP') {
++        this.log.debug('[CDP] Taking screenshot via CDP');
++        const cdpClient = this.cdpContextManager.getCurrentCDPClient();
++        if (cdpClient) {
++          return await cdpClient.takeScreenshot();
++        }
++      }
++      return await originalGetScreenshot();
++    };
++
++    // Store original getWindowRect method before overriding for CDP support
++    const originalGetWindowRect = this.getWindowRect.bind(this);
++
++    // Override getWindowRect to use CDP when shouldUseCDP is true
++    this.getWindowRect = async () => {
++      if (this.cdpContextManager && shouldUseCDP() && this.curContext !== 'NATIVE_APP') {
++        this.log.debug('[CDP] Getting window rect via CDP');
++        const cdpClient = this.cdpContextManager.getCurrentCDPClient();
++        if (cdpClient) {
++          return await cdpClient.getWindowRect();
++        }
++      }
++      return await originalGetWindowRect();
++    };
++
++    // Store original getWindowSize method before overriding for CDP support
++    const originalGetWindowSize = this.getWindowSize.bind(this);
++
++    // Override getWindowSize to use CDP when shouldUseCDP is true
++    this.getWindowSize = async () => {
++      if (this.cdpContextManager && shouldUseCDP() && this.curContext !== 'NATIVE_APP') {
++        this.log.debug('[CDP] Getting window size via CDP');
++        const cdpClient = this.cdpContextManager.getCurrentCDPClient();
++        if (cdpClient) {
++          const rect = await cdpClient.getWindowRect();
++          return {width: rect.width, height: rect.height};
++        }
++      }
++      return await originalGetWindowSize();
++    };
++
++    // Store original getViewPortRect method before overriding for CDP support
++    const originalGetViewPortRect = this.getViewPortRect.bind(this);
++
++    // Override getViewPortRect to use CDP viewport when shouldUseCDP is true
++    this.getViewPortRect = async () => {
++      if (this.cdpContextManager && shouldUseCDP() && this.curContext !== 'NATIVE_APP') {
++        this.log.debug('[CDP] Getting viewport rect via CDP');
++        const cdpClient = this.cdpContextManager.getCurrentCDPClient();
++        if (cdpClient) {
++          const rect = await cdpClient.getWindowRect();
++          return {
++            left: 0,
++            top: 0,
++            width: rect.width,
++            height: rect.height,
++          };
++        }
++      }
++      return await originalGetViewPortRect();
++    };
++
++    // Store original findElement method before overriding for CDP support
++    const originalFindElement = this.findElement.bind(this);
++
++    // Override findElement to use CDP when shouldUseCDP is true
++    this.findElement = async (strategy: string, selector: string) => {
++      if (this.cdpContextManager && shouldUseCDP() && this.curContext !== 'NATIVE_APP') {
++        this.log.debug(`[CDP] Finding element via CDP: ${strategy} = ${selector}`);
++        const cdpClient = this.cdpContextManager.getCurrentCDPClient();
++        if (cdpClient) {
++          return await cdpClient.findElementByStrategy(strategy, selector);
++        }
++      }
++      return await originalFindElement(strategy, selector);
++    };
++
++    // Store original findElements method before overriding for CDP support
++    const originalFindElements = this.findElements.bind(this);
++
++    // Override findElements to use CDP when shouldUseCDP is true
++    this.findElements = async (strategy: string, selector: string) => {
++      if (this.cdpContextManager && shouldUseCDP() && this.curContext !== 'NATIVE_APP') {
++        this.log.debug(`[CDP] Finding elements via CDP: ${strategy} = ${selector}`);
++        const cdpClient = this.cdpContextManager.getCurrentCDPClient();
++        if (cdpClient) {
++          return await cdpClient.findElementsByStrategy(strategy, selector);
++        }
++      }
++      return await originalFindElements(strategy, selector);
++    };
++
++    // Store original click method before overriding for CDP support
++    const originalClick = this.click.bind(this);
++
++    // Override click to use CDP when shouldUseCDP is true
++    this.click = async (elementId: string) => {
++      if (this.cdpContextManager && shouldUseCDP() && this.curContext !== 'NATIVE_APP') {
++        this.log.debug(`[CDP] Clicking element via CDP: ${elementId}`);
++        const cdpClient = this.cdpContextManager.getCurrentCDPClient();
++        if (cdpClient) {
++          return await cdpClient.clickElement(elementId);
++        }
++      }
++      return await originalClick(elementId);
++    };
++
++    // Store original getAttribute method before overriding for CDP support
++    const originalGetAttribute = this.getAttribute.bind(this);
++
++    // Override getAttribute to use CDP when shouldUseCDP is true
++    this.getAttribute = async (attribute: string, elementId: string) => {
++      if (this.cdpContextManager && shouldUseCDP() && this.curContext !== 'NATIVE_APP') {
++        this.log.debug(`[CDP] Getting attribute '${attribute}' via CDP for element: ${elementId}`);
++        const cdpClient = this.cdpContextManager.getCurrentCDPClient();
++        if (cdpClient) {
++          return await cdpClient.getElementAttribute(elementId, attribute);
++        }
++      }
++      return await originalGetAttribute(attribute, elementId);
++    };
++
++    // Store original getText method before overriding for CDP support
++    const originalGetText = this.getText.bind(this);
++
++    // Override getText to use CDP when shouldUseCDP is true
++    this.getText = async (elementId: string) => {
++      if (this.cdpContextManager && shouldUseCDP() && this.curContext !== 'NATIVE_APP') {
++        this.log.debug(`[CDP] Getting text via CDP for element: ${elementId}`);
++        const cdpClient = this.cdpContextManager.getCurrentCDPClient();
++        if (cdpClient) {
++          return await cdpClient.getElementText(elementId);
++        }
++      }
++      return await originalGetText(elementId);
++    };
+   }
+ 
+   override validateDesiredCaps(caps: any): caps is Uiautomator2DriverCaps {
+@@ -342,11 +585,30 @@
+       _.defaults(this.opts, defaultOpts);
+ 
+       this.opts.adbPort = this.opts.adbPort || DEFAULT_ADB_PORT;
++
++      // Auto-connect to network device if deviceName looks like IP:PORT
++      // Do this BEFORE getDeviceInfoFromCaps() so the device is available
++      const deviceNameFromCaps = caps.deviceName;
++      if (deviceNameFromCaps && /^\d+\.\d+\.\d+\.\d+:\d+$/.test(deviceNameFromCaps) && !this.opts.skipDeviceAutoConnect) {
++        this.log.info(`Detected network device address: ${deviceNameFromCaps}. Attempting to connect...`);
++        try {
++          // Create a temporary ADB instance to perform the connect
++          const {ADB} = await import('appium-adb');
++          const tempAdb = await ADB.createADB({adbPort: this.opts.adbPort});
++          await tempAdb.adbExec(['connect', deviceNameFromCaps]);
++          this.log.info(`Successfully connected to ${deviceNameFromCaps}`);
++        } catch (err) {
++          this.log.warn(`Failed to connect to ${deviceNameFromCaps}: ${err.message}`);
++          // Continue anyway as the device might already be connected
++        }
++      }
++
+       // get device udid for this session
+       const {udid, emPort} = await this.getDeviceInfoFromCaps();
+       this.opts.udid = udid;
+       // @ts-expect-error do not put random stuff on opts
+       this.opts.emPort = emPort;
++
+       // now that we know our java version and device info, we can create our
+       // ADB instance
+       this.adb = await this.createADB();
+@@ -412,6 +674,12 @@
+       this.mobileGetDeviceInfo(),
+     ]);
+ 
++    // When using CDP, use viewport dimensions as deviceScreenSize
++    let deviceScreenSize = realDisplaySize;
++    if ((this.opts.useCDP === true || this.opts.appPackage === 'com.oculus.browser') && viewportRect) {
++      deviceScreenSize = `${viewportRect.width}x${viewportRect.height}`;
++    }
++
+     return {
+       pixelRatio,
+       statBarHeight,
+@@ -420,7 +688,7 @@
+       platformVersion,
+       deviceManufacturer: manufacturer,
+       deviceModel: model,
+-      deviceScreenSize: realDisplaySize,
++      deviceScreenSize,
+       deviceScreenDensity: displayDensity,
+     };
+   }
+@@ -629,13 +897,90 @@
+       await this.setOrientation(this.opts.orientation as Orientation);
+     }
+ 
++    // Initialize CDP context manager when useCDP capability is enabled or for Oculus browser
++    const shouldInitCDP = this.opts.useCDP === true || this.opts.appPackage === 'com.oculus.browser';
++    if (shouldInitCDP) {
++      const reason = this.opts.useCDP === true
++        ? 'useCDP capability enabled'
++        : 'Oculus browser detected';
++      this.log.info(`[CDP] Initializing CDP context manager (${reason})`);
++      this.cdpContextManager = new CDPContextManager(this.adb!, this.adb.curDeviceId!, this.log);
++
++      // Wait for webview socket to be available and connect
++      this.log.info('[CDP] Discovering webview contexts...');
++      let contexts: string[] = [];
++      let attempts = 0;
++      const cdpDiscoveryTimeout = this.opts.autoWebviewTimeout || 30000;
++      const delayMs = 1000;
++      const maxAttempts = Math.max(10, Math.ceil(cdpDiscoveryTimeout / delayMs));
++
++      // Retry context discovery until webview is found
++      while (attempts < maxAttempts) {
++        try {
++          contexts = await this.cdpContextManager.getContexts();
++          const webviewContext = contexts.find((c) => c.startsWith('WEBVIEW_'));
++
++          if (webviewContext) {
++            this.log.info(`[CDP] Found webview context: ${webviewContext}`);
++
++            // Connect to the webview context to establish CDP connection
++            this.log.info('[CDP] Establishing CDP connection...');
++            await this.cdpContextManager.setContext(webviewContext);
++
++            // Cache viewport dimensions while connected
++            try {
++              const cdpClient = this.cdpContextManager.getCurrentCDPClient();
++              if (cdpClient) {
++                const rect = await cdpClient.getWindowRect();
++                if (rect.width > 0 && rect.height > 0) {
++                  this.cdpContextManager.updateCachedViewportDimensions(rect.width, rect.height);
++                  this.log.info(
++                    `[CDP] Cached initial viewport dimensions: ${rect.width}x${rect.height}`,
++                  );
++                }
++              }
++            } catch (e) {
++              this.log.warn(`[CDP] Failed to cache initial viewport dimensions: ${e.message}`);
++            }
++
++            // Switch back to NATIVE_APP so we don't interfere with normal operation
++            this.log.info('[CDP] Switching back to NATIVE_APP');
++            await this.cdpContextManager.setContext('NATIVE_APP');
++
++            this.log.info('[CDP] CDP initialization and connection complete');
++            break;
++          }
++
++          attempts++;
++          if (attempts < maxAttempts) {
++            this.log.info(
++              `[CDP] Webview not found yet, waiting ${delayMs}ms... (attempt ${attempts}/${maxAttempts})`,
++            );
++            await new Promise((resolve) => setTimeout(resolve, delayMs));
++          }
++        } catch (e) {
++          this.log.warn(`[CDP] Context discovery attempt ${attempts + 1} failed: ${e.message}`);
++          attempts++;
++          if (attempts < maxAttempts) {
++            await new Promise((resolve) => setTimeout(resolve, delayMs));
++          }
++        }
++      }
++
++      if (!contexts.find((c) => c.startsWith('WEBVIEW_'))) {
++        this.log.warn(
++          '[CDP] Could not find webview context after initialization. CDP features may not work properly.',
++        );
++      }
++    }
++
+     // if we want to immediately get into a webview, set our context
+     // appropriately
+     if (this.opts.autoWebview) {
+       const viewName = this.defaultWebviewName();
+-      const timeout = this.opts.autoWebviewTimeout || 2000;
++      const timeout = this.opts.autoWebviewTimeout || 30000;
+       this.log.info(`Setting auto webview to context '${viewName}' with timeout ${timeout}ms`);
+-      await retryInterval(timeout / 500, 500, this.setContext.bind(this), viewName);
++      await retryInterval(Math.ceil(timeout / 500), 500, this.setContext.bind(this), viewName);
+     }
+ 
+     // We would like to notify about the initial context setting
+@@ -668,6 +1013,10 @@
+ 
+     await this.performSessionExecution(capsWithSessionInfo);
+ 
++    // Initialize CDP context manager BEFORE getting device details
++    // This ensures CDP is available when getViewPortRect is called
++    await this.performSessionPostExecSetup();
++
+     const deviceInfoPromise: Promise<Uiautomator2DeviceDetails | EmptyObject> = (async () => {
+       try {
+         return await this.getDeviceDetails();
+@@ -677,9 +1026,16 @@
+       }
+     })();
+ 
+-    await this.performSessionPostExecSetup();
++    const deviceInfo = await deviceInfoPromise;
+ 
+-    return {...capsWithSessionInfo, ...(await deviceInfoPromise)};
++    // Include current context in capabilities so Inspector knows which mode we're in
++    const currentContext = await this.getCurrentContext();
++
++    return {
++      ...capsWithSessionInfo,
++      ...deviceInfo,
++      ...(currentContext !== 'NATIVE_APP' ? {currentContext} : {}),
++    };
+   }
+ 
+   async initUiAutomator2Server() {
+@@ -721,6 +1077,19 @@
+   }
+ 
+   async initAUT() {
++    // If fullReset + pwaPackage: clear appPackage data at the start of session
++    if (this.opts.fullReset && this.opts.pwaPackage && this.opts.appPackage) {
++      this.log.info(
++        `Capability 'fullReset' set to 'true' with 'pwaPackage', clearing data for '${this.opts.appPackage}'`,
++      );
++      try {
++        const result = await this.adb!.shell(['pm', 'clear', this.opts.appPackage]);
++        this.log.info(`'pm clear ${this.opts.appPackage}' result: ${result.trim()}`);
++      } catch (err) {
++        this.log.warn(`Unable to clear app data for '${this.opts.appPackage}': ${(err as Error).message}`);
++      }
++    }
++
+     // Uninstall any uninstallOtherPackages which were specified in caps
+     if (this.opts.uninstallOtherPackages) {
+       await this.uninstallOtherPackages(utils.parseArray(this.opts.uninstallOtherPackages), [
+@@ -759,17 +1128,24 @@
+         ) {
+           await signApp(this.adb!, this.opts.app);
+         }
+-        if (!this.opts.skipUninstall) {
++        if (!this.opts.skipUninstall && !this.opts.pwaPackage) {
+           await this.adb!.uninstallApk(this.opts.appPackage!);
+         }
+-        await this.installAUT();
++        if (this.opts.pwaPackage && this.opts.app) {
++          if (!this.opts.skipUninstall) {
++            await this.adb.uninstallApk(this.opts.pwaPackage);
++          }
++          await this.adb.install(this.opts.app);
++        } else {
++          await this.installAUT();
++        }
+       } else {
+         this.log.debug(
+           'noReset has been requested and the app is already installed. Doing nothing',
+         );
+       }
+     } else {
+-      if (this.opts.fullReset) {
++      if (this.opts.fullReset && !this.opts.pwaPackage) {
+         throw this.log.errorWithException(
+           'Full reset requires an app capability, use fastReset if app is not provided',
+         );
+@@ -801,21 +1177,56 @@
+       );
+       return;
+     }
+-    await this.adb!.startApp({
+-      pkg: this.opts.appPackage!,
+-      activity: this.opts.appActivity,
+-      action: this.opts.intentAction || 'android.intent.action.MAIN',
+-      category: this.opts.intentCategory || 'android.intent.category.LAUNCHER',
+-      flags: this.opts.intentFlags || '0x10200000', // FLAG_ACTIVITY_NEW_TASK | FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
+-      waitPkg: this.opts.appWaitPackage,
+-      waitActivity: this.opts.appWaitActivity,
+-      waitForLaunch: this.opts.appWaitForLaunch,
+-      waitDuration: this.opts.appWaitDuration,
+-      optionalIntentArguments: this.opts.optionalIntentArguments,
+-      stopApp: this.opts.forceAppLaunch || !this.opts.dontStopAppOnReset,
+-      retry: true,
+-      user: this.opts.userProfile,
+-    });
++
++    // Check if pwaPackage is provided for Oculus PWA launch
++    if (this.opts.pwaPackage) {
++      this.log.info(`Launching Oculus PWA with package: ${this.opts.pwaPackage}`);
++
++      // Stop app if needed
++      if (this.opts.forceAppLaunch || !this.opts.dontStopAppOnReset) {
++        await this.adb!.forceStop(this.opts.appPackage!);
++      }
++        // Special launch command for PWA via VR shell
++        const pwaUrl = this.opts.url || 'https://www.xbox.com/en-US/play';
++        this.log.info(`Using VR shell launch command for com.xbox.pwa`);
++        await this.adb!.shell([
++          'am',
++          'start',
++          '-n',
++          'com.oculus.vrshell/.MainActivity',
++          '-d',
++          `apk://${this.opts.pwaPackage}`,
++          '-e',
++          'uri',
++          pwaUrl
++        ]);
++
++      // Wait for the app to launch using appPackage and appActivity
++      if (!this.opts.pwaPackage && appWaitPackage && appWaitActivity) {
++        const waitDuration = this.opts.appWaitDuration || 20000;
++        this.log.info(
++          `Waiting up to ${waitDuration}ms for '${appWaitPackage}/${appWaitActivity}' to start`,
++        );
++        await this.adb!.waitForActivity(appWaitPackage, appWaitActivity, waitDuration);
++      }
++    } else {
++      // Standard app launch
++      await this.adb!.startApp({
++        pkg: this.opts.appPackage!,
++        activity: this.opts.appActivity,
++        action: this.opts.intentAction || 'android.intent.action.MAIN',
++        category: this.opts.intentCategory || 'android.intent.category.LAUNCHER',
++        flags: this.opts.intentFlags || '0x10200000', // FLAG_ACTIVITY_NEW_TASK | FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
++        waitPkg: this.opts.appWaitPackage,
++        waitActivity: this.opts.appWaitActivity,
++        waitForLaunch: this.opts.appWaitForLaunch,
++        waitDuration: this.opts.appWaitDuration,
++        optionalIntentArguments: this.opts.optionalIntentArguments,
++        stopApp: this.opts.forceAppLaunch || !this.opts.dontStopAppOnReset,
++        retry: true,
++        user: this.opts.userProfile,
++      });
++    }
+   }
+ 
+   async deleteSession() {
+@@ -845,6 +1256,15 @@
+       this.log.warn(`Unable to stop ChromeDriver proxies: ${(err as Error).message}`);
+     }
+ 
++    // Clean up CDP context manager if it exists
++    if (this.cdpContextManager) {
++      try {
++        await this.cdpContextManager.cleanup();
++      } catch (err) {
++        this.log.warn(`Unable to cleanup CDP context manager: ${(err as Error).message}`);
++      }
++    }
++
+     if (this.jwpProxyActive) {
+       try {
+         await this.uiautomator2.deleteSession();
+@@ -878,15 +1298,28 @@
+           }
+         }
+         if (this.opts.fullReset && !this.opts.skipUninstall) {
++          const pkgToUninstall = this.opts.pwaPackage || this.opts.appPackage;
+           this.log.debug(
+-            `Capability 'fullReset' set to 'true', Uninstalling '${this.opts.appPackage}'`,
++            `Capability 'fullReset' set to 'true', Uninstalling '${pkgToUninstall}'`,
+           );
+           try {
+-            await this.adb.uninstallApk(this.opts.appPackage);
++            await this.adb.uninstallApk(pkgToUninstall);
+           } catch (err) {
+             this.log.warn(`Unable to uninstall app: ${(err as Error).message}`);
+           }
+         }
++        // If fullReset + pwaPackage: clear appPackage data at the end of session
++        if (this.opts.fullReset && this.opts.pwaPackage && this.opts.appPackage) {
++          this.log.info(
++            `Capability 'fullReset' set to 'true' with 'pwaPackage', clearing data for '${this.opts.appPackage}' at session end`,
++          );
++          try {
++            const result = await this.adb.shell(['pm', 'clear', this.opts.appPackage]);
++            this.log.info(`'pm clear ${this.opts.appPackage}' result: ${result.trim()}`);
++          } catch (err) {
++            this.log.warn(`Unable to clear app data for '${this.opts.appPackage}': ${(err as Error).message}`);
++          }
++        }
+       }
+       // This value can be true if test target device is <= 26
+       if (this._wasWindowAnimationDisabled) {
+@@ -942,13 +1375,31 @@
+ 
+   // eslint-disable-next-line @typescript-eslint/no-unused-vars
+   proxyActive(sessionId: string): boolean {
+-    // we always have an active proxy to the UiAutomator2 server
+-    return true;
++    // If using CDP context manager and not in NATIVE_APP, disable proxy
++    // so commands go through CDP instead of UIAutomator2
++    if (this.cdpContextManager) {
++      const currentContext = this.cdpContextManager.getCurrentContext();
++      if (currentContext !== 'NATIVE_APP') {
++        this.log.debug(`[CDP] proxyActive returns false - in context: ${currentContext}`);
++        return false;
++      }
++    }
++    // we always have an active proxy to the UiAutomator2 server for native context
++    return this.jwpProxyActive;
+   }
+ 
+   // eslint-disable-next-line @typescript-eslint/no-unused-vars
+   canProxy(sessionId: string): boolean {
+-    // we can always proxy to the uiautomator2 server
++    // If using CDP context manager and not in NATIVE_APP, cannot proxy
++    // because UIAutomator2 doesn't understand web commands
++    if (this.cdpContextManager) {
++      const currentContext = this.cdpContextManager.getCurrentContext();
++      if (currentContext !== 'NATIVE_APP') {
++        this.log.debug(`[CDP] canProxy returns false - in context: ${currentContext}`);
++        return false;
++      }
++    }
++    // we can always proxy to the uiautomator2 server for native context
+     return true;
+   }
+ 
+@@ -958,6 +1409,9 @@
+     if (util.hasValue(this.chromedriver)) {
+       // if the current context is webview(chromedriver), then return CHROME_NO_PROXY list
+       this.jwpProxyAvoid = CHROME_NO_PROXY;
++    } else if (this.cdpContextManager && this.curContext !== 'NATIVE_APP') {
++      // if the current context is CDP webview (Oculus), return CHROME_NO_PROXY + CDP_NO_PROXY list
++      this.jwpProxyAvoid = [...CHROME_NO_PROXY, ...CDP_NO_PROXY];
+     } else {
+       this.jwpProxyAvoid = NO_PROXY;
+     }
+diff -ru --ex /Users/obilyk/.appium/node_modules/appium-uiautomator2-driver/lib/execute-method-map.ts /Users/obilyk/WebstormProjects/appium-uiautomator2-driver/lib/execute-method-map.ts
+--- /Users/obilyk/.appium/node_modules/appium-uiautomator2-driver/lib/execute-method-map.ts	2026-04-28 14:02:15
++++ /Users/obilyk/WebstormProjects/appium-uiautomator2-driver/lib/execute-method-map.ts	2026-04-14 16:53:50
+@@ -1,5 +1,5 @@
+-import {ExecuteMethodMap} from '@appium/types';
+-import {AndroidDriver} from 'appium-android-driver';
++import { ExecuteMethodMap } from '@appium/types';
++import { AndroidDriver } from 'appium-android-driver';
+ 
+ export const executeMethodMap = {
+   ...AndroidDriver.executeMethodMap,
+@@ -7,73 +7,149 @@
+   'mobile: dragGesture': {
+     command: 'mobileDragGesture',
+     params: {
+-      optional: ['elementId', 'startX', 'startY', 'endX', 'endY', 'speed'],
++      optional: [
++        'elementId',
++        'startX',
++        'startY',
++        'endX',
++        'endY',
++        'speed',
++      ],
+     },
+   },
+   'mobile: flingGesture': {
+     command: 'mobileFlingGesture',
+     params: {
+-      required: ['direction'],
+-      optional: ['elementId', 'left', 'top', 'width', 'height', 'speed'],
++      required: [
++        'direction',
++      ],
++      optional: [
++        'elementId',
++        'left',
++        'top',
++        'width',
++        'height',
++        'speed',
++      ],
+     },
+   },
+   'mobile: doubleClickGesture': {
+     command: 'mobileDoubleClickGesture',
+     params: {
+-      optional: ['elementId', 'x', 'y'],
++      optional: [
++        'elementId',
++        'x',
++        'y',
++      ],
+     },
+   },
+   'mobile: clickGesture': {
+     command: 'mobileClickGesture',
+     params: {
+-      optional: ['elementId', 'x', 'y'],
++      optional: [
++        'elementId',
++        'x',
++        'y',
++      ],
+     },
+   },
+   'mobile: longClickGesture': {
+     command: 'mobileLongClickGesture',
+     params: {
+-      optional: ['elementId', 'x', 'y', 'duration'],
++      optional: [
++        'elementId',
++        'x',
++        'y',
++        'duration',
++      ],
+     },
+   },
+   'mobile: pinchCloseGesture': {
+     command: 'mobilePinchCloseGesture',
+     params: {
+-      required: ['percent'],
+-      optional: ['elementId', 'left', 'top', 'width', 'height', 'speed'],
++      required: [
++        'percent',
++      ],
++      optional: [
++        'elementId',
++        'left',
++        'top',
++        'width',
++        'height',
++        'speed',
++      ],
+     },
+   },
+   'mobile: pinchOpenGesture': {
+     command: 'mobilePinchOpenGesture',
+     params: {
+-      required: ['percent'],
+-      optional: ['elementId', 'left', 'top', 'width', 'height', 'speed'],
++      required: [
++        'percent',
++      ],
++      optional: [
++        'elementId',
++        'left',
++        'top',
++        'width',
++        'height',
++        'speed',
++      ],
+     },
+   },
+   'mobile: swipeGesture': {
+     command: 'mobileSwipeGesture',
+     params: {
+-      required: ['direction', 'percent'],
+-      optional: ['elementId', 'left', 'top', 'width', 'height', 'speed'],
++      required: [
++        'direction',
++        'percent',
++      ],
++      optional: [
++        'elementId',
++        'left',
++        'top',
++        'width',
++        'height',
++        'speed',
++      ],
+     },
+   },
+   'mobile: scrollGesture': {
+     command: 'mobileScrollGesture',
+     params: {
+-      required: ['direction', 'percent'],
+-      optional: ['elementId', 'left', 'top', 'width', 'height', 'speed'],
++      required: [
++        'direction',
++        'percent',
++      ],
++      optional: [
++        'elementId',
++        'left',
++        'top',
++        'width',
++        'height',
++        'speed',
++      ],
+     },
+   },
+   'mobile: scrollBackTo': {
+     command: 'mobileScrollBackTo',
+     params: {
+-      required: ['elementId', 'elementToId'],
++      required: [
++        'elementId',
++        'elementToId',
++      ],
+     },
+   },
+   'mobile: scroll': {
+     command: 'mobileScroll',
+     params: {
+-      required: ['strategy', 'selector'],
+-      optional: ['elementId', 'maxSwipes'],
++      required: [
++        'strategy',
++        'selector',
++      ],
++      optional: [
++        'elementId',
++        'maxSwipes',
++      ],
+     },
+   },
+ 
+@@ -89,20 +165,20 @@
+     params: {
+       required: ['url'],
+       optional: ['package', 'waitForLaunch'],
+-    },
++    }
+   },
+ 
+   'mobile: acceptAlert': {
+     command: 'mobileAcceptAlert',
+     params: {
+       optional: ['buttonLabel'],
+-    },
++    }
+   },
+   'mobile: dismissAlert': {
+     command: 'mobileDismissAlert',
+     params: {
+       optional: ['buttonLabel'],
+-    },
++    }
+   },
+ 
+   'mobile: batteryInfo': {
+@@ -121,13 +197,13 @@
+     command: 'mobileType',
+     params: {
+       required: ['text'],
+-    },
++    }
+   },
+   'mobile: replaceElementValue': {
+     command: 'mobileReplaceElementValue',
+     params: {
+       required: ['elementId', 'text'],
+-    },
++    }
+   },
+ 
+   'mobile: installMultipleApks': {
+@@ -135,22 +211,22 @@
+     params: {
+       required: ['apks'],
+       optional: ['options'],
+-    },
++    }
+   },
+ 
+   'mobile: pressKey': {
+     command: 'mobilePressKey',
+     params: {
+       required: ['keycode'],
+-      optional: ['metastate', 'flags', 'isLongPress', 'source'],
+-    },
++      optional: ['metastate', 'flags', 'isLongPress'],
++    }
+   },
+ 
+   'mobile: screenshots': {
+     command: 'mobileScreenshots',
+     params: {
+       optional: ['displayId'],
+-    },
++    }
+   },
+ 
+   'mobile: scheduleAction': {
+@@ -158,19 +234,19 @@
+     params: {
+       required: ['name', 'steps'],
+       optional: ['maxPass', 'maxFail', 'times', 'intervalMs', 'maxHistoryItems'],
+-    },
++    }
+   },
+   'mobile: getActionHistory': {
+     command: 'mobileGetActionHistory',
+     params: {
+       required: ['name'],
+-    },
++    }
+   },
+   'mobile: unscheduleAction': {
+     command: 'mobileUnscheduleAction',
+     params: {
+       required: ['name'],
+-    },
++    }
+   },
+ 
+   'mobile: setClipboard': {
+@@ -178,7 +254,7 @@
+     params: {
+       required: ['content'],
+       optional: ['contentType', 'label'],
+-    },
++    }
+   },
+   'mobile: getClipboard': {
+     command: 'getClipboard',
+diff -ru --ex /Users/obilyk/.appium/node_modules/appium-uiautomator2-driver/lib/extensions.ts /Users/obilyk/WebstormProjects/appium-uiautomator2-driver/lib/extensions.ts
+--- /Users/obilyk/.appium/node_modules/appium-uiautomator2-driver/lib/extensions.ts	2026-04-28 14:02:15
++++ /Users/obilyk/WebstormProjects/appium-uiautomator2-driver/lib/extensions.ts	2026-04-14 16:53:50
+@@ -1,2 +1,3 @@
+ export const APK_EXTENSION = '.apk' as const;
+ export const APKS_EXTENSION = '.apks' as const;
++
+diff -ru --ex /Users/obilyk/.appium/node_modules/appium-uiautomator2-driver/lib/helpers.ts /Users/obilyk/WebstormProjects/appium-uiautomator2-driver/lib/helpers.ts
+--- /Users/obilyk/.appium/node_modules/appium-uiautomator2-driver/lib/helpers.ts	2026-04-28 14:02:15
++++ /Users/obilyk/WebstormProjects/appium-uiautomator2-driver/lib/helpers.ts	2026-04-14 17:25:33
+@@ -1,4 +1,4 @@
+-import path from 'node:path';
++import path from 'path';
+ import type {ADB} from 'appium-adb';
+ import {fs, system} from 'appium/support';
+ 
+@@ -28,3 +28,4 @@
+   }
+   await adb.sign(appPath);
+ }
++
+diff -ru --ex /Users/obilyk/.appium/node_modules/appium-uiautomator2-driver/lib/index.ts /Users/obilyk/WebstormProjects/appium-uiautomator2-driver/lib/index.ts
+--- /Users/obilyk/.appium/node_modules/appium-uiautomator2-driver/lib/index.ts	2026-04-28 14:02:15
++++ /Users/obilyk/WebstormProjects/appium-uiautomator2-driver/lib/index.ts	2026-04-14 17:25:33
+@@ -1,4 +1,7 @@
+-import {AndroidUiautomator2Driver} from './driver';
++import { AndroidUiautomator2Driver } from './driver';
+ 
+-export {AndroidUiautomator2Driver};
++export { AndroidUiautomator2Driver };
++export { CDPClient, getCDPPages } from './cdp-client';
++export { CDPContextManager } from './cdp-context-manager';
+ export default AndroidUiautomator2Driver;
++
+diff -ru --ex /Users/obilyk/.appium/node_modules/appium-uiautomator2-driver/lib/logger.ts /Users/obilyk/WebstormProjects/appium-uiautomator2-driver/lib/logger.ts
+--- /Users/obilyk/.appium/node_modules/appium-uiautomator2-driver/lib/logger.ts	2026-04-28 14:02:15
++++ /Users/obilyk/WebstormProjects/appium-uiautomator2-driver/lib/logger.ts	2026-04-14 16:53:50
+@@ -1,3 +1,4 @@
+ import {logger} from 'appium/support';
+ 
+ export const log = logger.getLogger('UiAutomator2');
++
+diff -ru --ex /Users/obilyk/.appium/node_modules/appium-uiautomator2-driver/lib/method-map.ts /Users/obilyk/WebstormProjects/appium-uiautomator2-driver/lib/method-map.ts
+--- /Users/obilyk/.appium/node_modules/appium-uiautomator2-driver/lib/method-map.ts	2026-04-28 14:02:15
++++ /Users/obilyk/WebstormProjects/appium-uiautomator2-driver/lib/method-map.ts	2026-04-14 16:53:50
+@@ -6,7 +6,7 @@
+     POST: {
+       command: 'getClipboard',
+       payloadParams: {optional: ['contentType']},
+-      deprecated: true,
++      deprecated: true
+     },
+   },
+   '/session/:sessionId/log': {
+diff -ru --ex /Users/obilyk/.appium/node_modules/appium-uiautomator2-driver/lib/types.ts /Users/obilyk/WebstormProjects/appium-uiautomator2-driver/lib/types.ts
+--- /Users/obilyk/.appium/node_modules/appium-uiautomator2-driver/lib/types.ts	2026-04-28 14:02:15
++++ /Users/obilyk/WebstormProjects/appium-uiautomator2-driver/lib/types.ts	2026-04-14 16:53:50
+@@ -42,10 +42,13 @@
+ }
+ 
+ export interface Uiautomator2StartSessionOpts
+-  extends Uiautomator2DriverCaps, Uiautomator2ServerInfo {}
++  extends Uiautomator2DriverCaps,
++    Uiautomator2ServerInfo {}
+ 
+ export interface Uiautomator2SessionCaps
+-  extends Uiautomator2ServerInfo, Uiautomator2SessionInfo, Partial<Uiautomator2DeviceDetails> {}
++  extends Uiautomator2ServerInfo,
++    Uiautomator2SessionInfo,
++    Partial<Uiautomator2DeviceDetails> {}
+ 
+ export interface Uiautomator2Settings {
+   ignoreUnimportantViews: boolean;
+diff -ru --ex /Users/obilyk/.appium/node_modules/appium-uiautomator2-driver/lib/uiautomator2.ts /Users/obilyk/WebstormProjects/appium-uiautomator2-driver/lib/uiautomator2.ts
+--- /Users/obilyk/.appium/node_modules/appium-uiautomator2-driver/lib/uiautomator2.ts	2026-04-28 14:02:15
++++ /Users/obilyk/WebstormProjects/appium-uiautomator2-driver/lib/uiautomator2.ts	2026-04-14 16:53:50
+@@ -120,11 +120,8 @@
+     const shouldUninstallServerPackages = this.shouldUninstallServerPackages(packagesInfo);
+     // Install must always follow uninstall. Also, perform the install if
+     // any of server packages is not installed or is outdated
+-    const shouldInstallServerPackages =
+-      shouldUninstallServerPackages || this.shouldInstallServerPackages(packagesInfo);
+-    this.log.info(
+-      `Server packages are ${shouldInstallServerPackages ? '' : 'not '}going to be (re)installed`,
+-    );
++    const shouldInstallServerPackages = shouldUninstallServerPackages || this.shouldInstallServerPackages(packagesInfo);
++    this.log.info(`Server packages are ${shouldInstallServerPackages ? '' : 'not '}going to be (re)installed`);
+     if (shouldInstallServerPackages && shouldUninstallServerPackages) {
+       this.log.info('Full packages reinstall is going to be performed');
+     }
+@@ -156,9 +153,7 @@
+   async startSession(caps: StringRecord): Promise<void> {
+     await this.cleanupAutomationLeftovers();
+     if (caps.skipServerInstallation) {
+-      this.log.info(
+-        `'skipServerInstallation' is set. Attempting to use UIAutomator2 server from the device`,
+-      );
++      this.log.info(`'skipServerInstallation' is set. Attempting to use UIAutomator2 server from the device`);
+     } else {
+       this.log.info(`Starting UIAutomator2 server ${serverVersion}`);
+       this.log.info(`Using UIAutomator2 server from '${apkPath}' and test from '${testApkPath}'`);
+@@ -256,10 +251,7 @@
+     }
+ 
+     try {
+-      await B.all([
+-        this.adb.forceStop(SERVER_PACKAGE_ID),
+-        this.adb.forceStop(SERVER_TEST_PACKAGE_ID),
+-      ]);
++      await B.all([this.adb.forceStop(SERVER_PACKAGE_ID), this.adb.forceStop(SERVER_TEST_PACKAGE_ID)]);
+     } catch {}
+   }
+ 
+@@ -275,10 +267,7 @@
+       // since it does not contain any version info
+       resultInfo.installState = this.adb.APP_INSTALL_STATE.SAME_VERSION_INSTALLED;
+     } else if (appId === SERVER_PACKAGE_ID) {
+-      resultInfo.installState = await this.adb.getApplicationInstallState(
+-        resultInfo.appPath,
+-        appId,
+-      );
++      resultInfo.installState = await this.adb.getApplicationInstallState(resultInfo.appPath, appId);
+     }
+ 
+     return resultInfo;
+@@ -303,10 +292,9 @@
+       ({installState}) => installState !== this.adb.APP_INSTALL_STATE.NOT_INSTALLED,
+     );
+     const isAnyComponentNotInstalledOrNewer = packagesInfo.some(({installState}) =>
+-      [
+-        this.adb.APP_INSTALL_STATE.NOT_INSTALLED,
+-        this.adb.APP_INSTALL_STATE.NEWER_VERSION_INSTALLED,
+-      ].includes(installState),
++      [this.adb.APP_INSTALL_STATE.NOT_INSTALLED, this.adb.APP_INSTALL_STATE.NEWER_VERSION_INSTALLED].includes(
++        installState,
++      ),
+     );
+     return isAnyComponentInstalled && isAnyComponentNotInstalledOrNewer;
+   }
+@@ -320,10 +308,9 @@
+    */
+   private shouldInstallServerPackages(packagesInfo: PackageInfo[] = []): boolean {
+     return packagesInfo.some(({installState}) =>
+-      [
+-        this.adb.APP_INSTALL_STATE.NOT_INSTALLED,
+-        this.adb.APP_INSTALL_STATE.OLDER_VERSION_INSTALLED,
+-      ].includes(installState),
++      [this.adb.APP_INSTALL_STATE.NOT_INSTALLED, this.adb.APP_INSTALL_STATE.OLDER_VERSION_INSTALLED].includes(
++        installState,
++      ),
+     );
+   }
+ 
+@@ -381,11 +368,7 @@
+       cmd.push('--no-window-animation');
+     }
+     if (_.isBoolean(this.disableSuppressAccessibilityService)) {
+-      cmd.push(
+-        '-e',
+-        'DISABLE_SUPPRESS_ACCESSIBILITY_SERVICES',
+-        `${this.disableSuppressAccessibilityService}`,
+-      );
++      cmd.push('-e', 'DISABLE_SUPPRESS_ACCESSIBILITY_SERVICES', `${this.disableSuppressAccessibilityService}`);
+     }
+     // Disable Google analytics to prevent possible fatal exception
+     cmd.push('-e', 'disableAnalytics', 'true');
+@@ -397,9 +380,7 @@
+       );
+     }
+     this.instrumentationProcess.once('exit', (code: number | null, signal: string | null) => {
+-      this.log.debug(
+-        `[Instrumentation] The process has exited with code ${code}, signal ${signal}`,
+-      );
++      this.log.debug(`[Instrumentation] The process has exited with code ${code}, signal ${signal}`);
+       this.jwproxy.didInstrumentationExit = true;
+     });
+     await this.instrumentationProcess.start(0);
+@@ -417,9 +398,7 @@
+   }
+ 
+   private async cleanupAutomationLeftovers(strictCleanup: boolean = false): Promise<void> {
+-    this.log.debug(
+-      `Performing ${strictCleanup ? 'strict' : 'shallow'} cleanup of automation leftovers`,
+-    );
++    this.log.debug(`Performing ${strictCleanup ? 'strict' : 'shallow'} cleanup of automation leftovers`);
+ 
+     const serverBase = `http://${this.host}:${this.systemPort}`;
+     try {
+@@ -432,9 +411,7 @@
+       const activeSessionIds = value.map(({id}) => id).filter(Boolean);
+       if (activeSessionIds.length) {
+         this.log.debug(`The following obsolete sessions are still running: ${activeSessionIds}`);
+-        this.log.debug(
+-          `Cleaning up ${util.pluralize('obsolete session', activeSessionIds.length, true)}`,
+-        );
++        this.log.debug(`Cleaning up ${util.pluralize('obsolete session', activeSessionIds.length, true)}`);
+         await B.all(
+           activeSessionIds.map((id: string) =>
+             axios.delete(`${serverBase}/session/${id}`, {
+@@ -452,10 +429,7 @@
+     }
+ 
+     try {
+-      await B.all([
+-        this.adb.forceStop(SERVER_PACKAGE_ID),
+-        this.adb.forceStop(SERVER_TEST_PACKAGE_ID),
+-      ]);
++      await B.all([this.adb.forceStop(SERVER_PACKAGE_ID), this.adb.forceStop(SERVER_TEST_PACKAGE_ID)]);
+     } catch {}
+     if (strictCleanup) {
+       // https://github.com/appium/appium/issues/10749
+@@ -495,6 +469,7 @@
+   }
+ }
+ 
++
+ export interface PackageInfo {
+   installState: InstallState;
+   appPath: string;
+@@ -523,3 +498,4 @@
+ interface SessionsResponse {
+   value: SessionInfo[];
+ }
++
