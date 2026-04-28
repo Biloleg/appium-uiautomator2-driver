@@ -22,12 +22,16 @@ if [ ! -d "$TARGET_DIR" ]; then
   exit 1
 fi
 
-echo "🔧 Applying $PATCH_FILE to $TARGET_DIR/lib ..."
+echo "🔧 Applying $PATCH_FILE to $TARGET_DIR ..."
 
-# patch -p3 strips: "--- /Users/.../node_modules/appium-uiautomator2-driver/lib/..."
-#                -> "lib/..."
-patch -p3 --directory="$TARGET_DIR" --input="$PATCH_FILE" --batch
+cd "$TARGET_DIR"
 
-echo "✅ Patch applied successfully."
+# Show what will be changed
+git apply --stat "$PATCH_FILE" 2>&1 || true
+
+# Apply the patch (paths in patch are relative: lib/file.ts → <TARGET_DIR>/lib/file.ts)
+git apply "$PATCH_FILE"
+
+echo ""
+echo "✅ Patch applied successfully to $TARGET_DIR"
 echo "   Restart Appium to pick up the changes."
-

@@ -16,11 +16,17 @@ echo "📦 Patching installed driver at $TARGET_DIR ..."
 rsync -a --delete "$PROJECT_DIR/build/" "$TARGET_DIR/build/"
 
 echo "📝 Regenerating custom-changes.patch ..."
-diff -ru \
-  "$TARGET_DIR/lib" \
-  "$PROJECT_DIR/lib" \
-  --exclude="*.js" \
-  > "$PROJECT_DIR/custom-changes.patch" || true   # diff exits 1 when files differ
+
+# Generate raw diff, then normalize all paths to relative 'a/lib/...' 'b/lib/...'
+# so the patch is portable and can be applied with: cd <driver_root> && git apply custom-changes.patch
+
+git diff --no-index "$TARGET_DIR/lib" "$PROJECT_DIR/lib" 2>/dev/null | \
+  sed \
+    -E \
+    -e "s|^diff --git a/[^ ]*/lib/([^ ]+) b/[^ ]*/lib/([^ ]+)|diff --git a/lib/\1 b/lib/\2|g" \
+    -e "s|^--- a/[^ ]*/lib/|--- a/lib/|g" \
+    -e "s|^\+\+\+ b/[^ ]*/lib/|+++ b/lib/|g" \
+    > "$PROJECT_DIR/custom-changes.patch" || true
 
 LINES=$(wc -l < "$PROJECT_DIR/custom-changes.patch")
 echo "✅ Done. build/ synced and custom-changes.patch updated ($LINES lines)."
