@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Builds the project, patches the installed Appium driver in ~/.appium,
-# and regenerates custom-changes.patch
+# and regenerates uiautomator2-driver-improvements.patch
 
 set -e
 
@@ -18,7 +18,7 @@ rsync -a --delete "$PROJECT_DIR/build/" "$TARGET_DIR/build/"
 echo "📝 Regenerating custom-changes.patch ..."
 
 # Generate raw diff, then normalize all paths to relative 'a/lib/...' 'b/lib/...'
-# so the patch is portable and can be applied with: cd <driver_root> && git apply custom-changes.patch
+# so the patch is portable and can be applied with: cd <driver_root> && git apply uiautomator2-driver-improvements.patch
 
 git diff --no-index "$TARGET_DIR/lib" "$PROJECT_DIR/lib" 2>/dev/null | \
   sed \
@@ -26,7 +26,7 @@ git diff --no-index "$TARGET_DIR/lib" "$PROJECT_DIR/lib" 2>/dev/null | \
     -e "s|^diff --git a/[^ ]*/lib/([^ ]+) b/[^ ]*/lib/([^ ]+)|diff --git a/lib/\1 b/lib/\2|g" \
     -e "s|^--- a/[^ ]*/lib/|--- a/lib/|g" \
     -e "s|^\+\+\+ b/[^ ]*/lib/|+++ b/lib/|g" \
-    > "$PROJECT_DIR/custom-changes.patch" || true
+    > "$PROJECT_DIR/scripts/uiautomator2-driver-improvements.patch" || true
 
-LINES=$(wc -l < "$PROJECT_DIR/custom-changes.patch")
-echo "✅ Done. build/ synced and custom-changes.patch updated ($LINES lines)."
+LINES=$(wc -l < "$PROJECT_DIR/scripts/uiautomator2-driver-improvements.patch")
+echo "✅ Done. build/ synced and uiautomator2-driver-improvements.patch updated ($LINES lines)."
