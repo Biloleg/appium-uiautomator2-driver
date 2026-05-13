@@ -128,6 +128,7 @@ diff -urN \
 # `diff --git` line so the result looks like git/patch-package output.
 python3 - "$RAW_DIFF" "$WORK_DIR" "$ROOT" "$PKG_NAME" "$OUT_PATH" <<'PY'
 import re, sys, os
+from typing import Optional
 
 raw_path, base_dir, cur_dir, pkg_name, out_path = sys.argv[1:6]
 prefix = f"node_modules/{pkg_name}"
@@ -139,7 +140,7 @@ out = []
 i = 0
 n = len(lines)
 
-def to_rel(p: str) -> str | None:
+def to_rel(p: str) -> Optional[str]:
     """Convert an absolute path inside base_dir or cur_dir into a relative
     path under the package (e.g. 'lib/driver.ts' or 'build/lib/driver.js').
     Returns None for /dev/null or unknown roots."""
