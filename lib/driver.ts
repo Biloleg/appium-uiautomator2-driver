@@ -107,7 +107,7 @@ import {
   mobileResetAccessibilityCache,
 } from './commands/misc';
 import {mobileListWindows, mobileListDisplays} from './commands/windows';
-import {setUrl, mobileDeepLink, back} from './commands/navigation';
+import {setUrl, getUrl, title, forward, refresh, mobileDeepLink, back} from './commands/navigation';
 import {
   mobileScreenshots,
   mobileViewportScreenshot,
@@ -248,6 +248,13 @@ const CDP_NO_PROXY: RouteMatcher[] = [
   ['GET', new RegExp('^/session/[^/]+/source$')],
   ['GET', new RegExp('^/session/[^/]+/screenshot$')],
   ['GET', new RegExp('^/session/[^/]+/window/rect$')],
+  // Navigation routes are handled directly via CDP, never proxy to Chromedriver
+  ['GET', new RegExp('^/session/[^/]+/url$')],
+  ['POST', new RegExp('^/session/[^/]+/url$')],
+  ['GET', new RegExp('^/session/[^/]+/title$')],
+  ['POST', new RegExp('^/session/[^/]+/back$')],
+  ['POST', new RegExp('^/session/[^/]+/forward$')],
+  ['POST', new RegExp('^/session/[^/]+/refresh$')],
 ];
 
 const MEMOIZED_FUNCTIONS = ['getStatusBarHeight', 'getDevicePixelRatio'] as const;
@@ -467,7 +474,9 @@ class AndroidUiautomator2Driver
       return await originalGetViewPortRect();
     };
 
-    // Store original findElement method before overriding for CDP support
+    // CDP routing for getUrl/setUrl/title/back/forward/refresh is implemented
+    // directly inside the corresponding command methods (see commands/navigation.ts),
+    // so they always exist on the instance regardless of when CDP becomes ready.
     const originalFindElement = this.findElement.bind(this);
 
     // Override findElement to use CDP when shouldUseCDP is true
@@ -1512,6 +1521,10 @@ class AndroidUiautomator2Driver
   setClipboard = setClipboard;
 
   setUrl = setUrl;
+  getUrl = getUrl;
+  title = title;
+  forward = forward;
+  refresh = refresh;
   mobileDeepLink = mobileDeepLink;
   back = back;
 

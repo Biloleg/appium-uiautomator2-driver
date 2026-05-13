@@ -180,6 +180,30 @@ export class CDPClient {
     }
 
     /**
+     * Reload current page
+     */
+    async reload(ignoreCache = false): Promise<void> {
+        this.logger.info(`[CDP] Reloading page (ignoreCache=${ignoreCache})`);
+        await this.sendCommand('Page.reload', { ignoreCache });
+    }
+
+    /**
+     * Navigate back in history
+     */
+    async back(): Promise<void> {
+        this.logger.info('[CDP] history.back()');
+        await this.executeScript('window.history.back()');
+    }
+
+    /**
+     * Navigate forward in history
+     */
+    async forward(): Promise<void> {
+        this.logger.info('[CDP] history.forward()');
+        await this.executeScript('window.history.forward()');
+    }
+
+    /**
      * Execute JavaScript
      */
     async executeScript(script: string, awaitPromise = false): Promise<any> {
