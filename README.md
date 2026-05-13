@@ -1,4 +1,4 @@
-# Appium UiAutomator2 Driver with Oculus Support
+# Appium UiAutomator2 Driver
 
 [![NPM version](http://img.shields.io/npm/v/appium-uiautomator2-driver.svg)](https://npmjs.org/package/appium-uiautomator2-driver)
 [![Downloads](http://img.shields.io/npm/dm/appium-uiautomator2-driver.svg)](https://npmjs.org/package/appium-uiautomator2-driver)
@@ -82,7 +82,6 @@ appium:optionalIntentArguments | Set an optional intent arguments to be applied 
 appium:dontStopAppOnReset | Set it to `true` if you don't want the application to be restarted if it was already running. If `appium:noReset` is falsy, then the app under test is going to be restarted if either this capability is falsy (the default behavior) or `appium:forceAppLaunch` is set to `true`. `false` by default
 appium:forceAppLaunch | Set it to `true` if you want the application under test to be always forcefully restarted on session startup even if `appium:noReset` is `true`, and the app was already running. If `noReset` is falsy, then the app under test is going to be restarted if either this capability set to `true` or `appium:dontStopAppOnReset` is falsy (the default behavior). `false` by default. Available since driver version 2.12
 appium:shouldTerminateApp | Set it to `true` if you want the application under test to be always terminated on session end even if `appium:noReset` is `true`. If `noReset` is falsy, then the app under test is going to be terminated if `appium:dontStopAppOnReset` is also falsy (the default behavior). `false` by default
-appium:pwaPackage | Package name of the Oculus PWA to launch. When provided, the driver will use a special launch command for Oculus Browser PWAs: `adb shell am start -n com.oculus.browser/.ShortcutPanelActivity -a android.intent.action.VIEW -c com.oculus.intent.category.VR_HOME_LAUNCHER -d "ovrweb://pwa?packageName=<pwaPackage>"`. The driver will still wait for `appium:appPackage` and `appium:appActivity` to start, and all other interactions (closing app, etc.) will use those values. Unset by default. Example: `com.xbox.pwa`
 appium:autoLaunch | Whether to launch the application under test automatically (`true`, the default value) after a test starts
 appium:autoGrantPermissions | Whether to grant all the requested application permissions automatically when a test starts(`true`). The targetSdkVersion in the application manifest must be greater or equal to 23 and the Android version on the device under test must be greater or equal to Android 6 (API level 23) to grant permissions. Applications whose targetSdkVersion is lower than or equal to 22 must be reinstalled to grant permissions, for example, by setting the `appium:fullReset` capability as `true` for Android 6+ devices. If your app needs some special security permissions, like access to notifications or media recording, consider using [mobile: changePermissions](#mobile-changepermissions) extension with `appops` target. `false` by default
 appium:otherApps | Allows to set one or more comma-separated paths to Android packages that are going to be installed along with the main application under test. This may be useful if the tested app has dependencies
@@ -155,10 +154,12 @@ appium:unlockSuccessTimeout | Maximum number of milliseconds to wait until the d
 
 ### MJPEG
 
+Read the [MJPEG guide](docs/mjpeg.md) for capabilities, settings, and usage details.
+
 Capability Name | Description
 --- | ---
-appium:mjpegServerPort | The number of the port on the host machine that UiAutomator2 server starts the MJPEG server on. If not provided then the screenshots broadcasting service on the remote device does not get exposed to a local port (e.g. no adb port forwarding is happening)
-appium:mjpegScreenshotUrl | The URL of a service that provides realtime device screenshots in MJPEG format. If provided then the actual command to retrieve a screenshot will be requesting pictures from this service rather than directly from the server
+appium:mjpegServerPort | The number of the port on the host machine to which the device MJPEG server port is forwarded. If not provided then the screenshots broadcasting service on the remote device does not get exposed to a local port (e.g. no adb port forwarding is happening).
+appium:mjpegScreenshotUrl | The URL of a service that provides realtime device screenshots in MJPEG format. If provided then the actual command to retrieve a screenshot will be requesting pictures from this service rather than directly from the server.
 
 ### Web Context
 
@@ -167,7 +168,6 @@ Capability Name | Description
 appium:autoWebview | If set to `true` then UiAutomator2 driver will try to switch to the web view with name `WEBVIEW_ + appium:appPackage` after the session is started. For example, if `appium:appPackage` capability is set to `com.mypackage` then `WEBVIEW_com.mypackage` will be used. `false` by default.
 appium:autoWebviewName | Set the name of webview context in which UiAutomator2 driver will try to switch if `autoWebview` capability is set to `true` (available since driver version 2.9.1). Has priority over using the `appium:appPackage` value in webview name. For example, if `appium:autoWebviewName` capability is set to `myWebviewName` then `WEBVIEW_myWebviewName` will be used. Unset by default.
 appium:autoWebviewTimeout | Set the maximum number of milliseconds to wait until a web view is available if `autoWebview` capability is set to `true`. `2000` ms by default.
-appium:useCDP | If set to `true`, the driver will use Chrome DevTools Protocol (CDP) for web context automation instead of Chromedriver. This can be useful for applications where Chromedriver compatibility is an issue or direct CDP access is preferred. When enabled, the driver will establish CDP connections directly to webviews for commands like script execution, page source retrieval, and screenshots. `false` by default.
 appium:webviewDevtoolsPort | The local port number to use for devtools communication. By default the first free port from 10900..11000 range is selected. Consider setting the custom value if you are running parallel tests.
 appium:ensureWebviewsHavePages | Whether to skip web views that have no pages from being shown in `getContexts` output. The driver uses devtools connection to retrieve the information about existing pages. `true` by default since Appium 1.19.0, `false` if lower than 1.19.0.
 appium:enableWebviewDetailsCollection | Whether to retrieve extended web views information using devtools protocol. Enabling this capability helps to detect the necessary chromedriver version more precisely. `true` by default since Appium 1.22.0, `false` if lower than 1.22.0.
@@ -329,17 +329,16 @@ mjpegServerPort | int | The number of the port on the remote device to start MJP
 mjpegServerFramerate | int | The maximum count of screenshots per second taken by the MJPEG screenshots broadcaster. Must be in range 1..60. `10` by default
 mjpegScalingFactor | int | The percentage value used to apply downscaling on the screenshots generated by the MJPEG screenshots broadcaster. Must be in range 1..100. `50` is by default, which means that screenshots are downscaled to the half of their original size keeping their original proportions.
 mjpegServerScreenshotQuality | int | The percentage value used to apply lossy JPEG compression on the screenshots generated by the MJPEG screenshots broadcaster. Must be in range 1..100. `50` is by default, which means that screenshots are compressed to the half of their original quality.
-mjpegBilinearFiltering | boolean | Controls whether (`true`) or not (`false`, the default value) to apply bilinear filtering to MJPEG screenshots broadcaster resize algorithm. Enabling this flag may improve the quality of the resulting scaled bitmap, but may introduce a small performance hit.
+mjpegBilinearFiltering | boolean | Controls whether (`true`) or not (`false`, the default value) to apply bilinear filtering to MJPEG screenshots broadcaster resize algorithm. Enabling this flag may improve the quality of the resulting scaled bitmap, but may introduce a small performance hit. See the [MJPEG guide](docs/mjpeg.md) for details on all MJPEG settings.
 useResourcesForOrientationDetection | boolean | Defines the strategy used by UiAutomator2 server to detect the original device orientation. By default (`false` value) the server uses device rotation value for this purpose. Although, this approach may not work for some devices and a portrait orientation may erroneously be detected as the landscape one (and vice versa). In such case it makes sense to play with this setting.
 enforceXPath1 | boolean | Since UiAutomator2 driver version `4.25.0` XPath2 is set as the default and the recommended interpreter for the corresponding element locators. This interpreter is based on [Psychopath XPath2](https://wiki.eclipse.org/PsychoPathXPathProcessor) implementation, which is now a part of the Eclipse foundation. In most of the cases XPath1 locators are also valid XPath2 locators, so there should be no issues while locating elements. Although, since the XPath2 standard is much more advanced in comparison to the previous version, some [issues](https://github.com/appium/appium/issues/16142) are possible for more sophisticated locators, which cannot be fixed easily, as we depend on the third-party library mentioned above. Then try to workaround such issues by enforcing XPath1 usage (whose implementation is a part of the Android platform itself) and assigning this setting to `true`. Note, this setting is actually applied at the time when the element lookup by XPath is executed, so you could switch it on or off whenever needed throughout your automated testing session.
 limitXPathContextScope | boolean | Due to historical reasons UiAutomator2 driver limits scopes of element context-based searches to the parent element. This means a request like `findElement(By.xpath, "//root").findElement(By.xpath, "./..")` would always fail, because the driver only collects descendants of the `root` element for the destination XML source. The `limitXPathContextScope` setting being set to `false` changes that default behavior, so the collected page source includes the whole page source XML where `root` node is set as the search context. With that setting disabled the search query above should not fail anymore. Although, you must still be careful while building XPath requests for context-based searches with the `limitXPathContextScope` setting set to `false`. A request like `findElement(By.xpath, "//root").findElement(By.xpath, "//element")` would ignore the current context and search for `element` trough the whole page source. Use `.` notation to correct that behavior and only find `element` nodes which are descendants of the `root` node: `findElement(By.xpath, "//root").findElement(By.xpath, ".//element")`.
 disableIdLocatorAutocompletion | boolean | According to internal Android standards it is expected that each resource identifier is prefixed with `<packageName>:id/` string. This should guarantee uniqueness of each identifier. Although some application development frameworks ignore this rule and don't add such prefix automatically or, rather, let it up to the developer to decide how to represent their application identifiers. For example, [testTag modifier attribute in the Jetpack Compose](https://developer.android.com/reference/kotlin/androidx/compose/ui/platform/package-summary#(androidx.compose.ui.Modifier).testTag(kotlin.String)) with [testTagsAsResourceId](https://developer.android.com/reference/kotlin/androidx/compose/ui/semantics/package-summary#(androidx.compose.ui.semantics.SemanticsPropertyReceiver).testTagsAsResourceId()) allows developers to set an arbitrary string without the prefix rule. [Interoperability with UiAutomator](https://developer.android.com/jetpack/compose/testing) also explains how to set it. By default UIA2 driver adds the above prefixes automatically to all resource id locators if they are not prefixed, but in case of such "special" apps this feature might be disabled by assigning the setting to `true`.
+alwaysTraversableViewClasses | string | Allows to continue the tree traversal for user defined classes even though the node itself is invisible. The default logic for the UI tree traversal (controlled by the `allowInvisibleElements` setting) is to stop recursing when an invisible node is found. However, with certain Jetpack Compose classes (e.g. androidx.compose.ui.viewinterop.ViewFactoryHolder), it is possible that invisible parent nodes have visible child nodes.  See [Google issue \#354958193](https://issuetracker.google.com/issues/354958193) and [UIA2 server issue \#709](https://github.com/appium/appium-uiautomator2-server/issues/709) for more details. This setting only affects the XPath lookup and the page source buildup. You can provide a comma separated list of glob patterns, that will be used as an exemption list: `androidx.compose.ui.viewinterop.*,android.widget.ImageButton`. Available since the driver version 5.0.3.
 includeExtrasInPageSource | boolean | Whether to include `extras` element attribute in the XML page source result. Then, XPath locator can find the element by the extras. Its value consists of combined [getExtras](https://developer.android.com/reference/android/view/accessibility/AccessibilityNodeInfo#getExtras()) as `keys=value` pair separated by a semicolon (`;`), thus you may need to find the element with partial matching like `contains` e.g. `driver.find_element :xpath, '//*[contains(@extras, "AccessibilityNodeInfo.roleDescription=")]'`. The value could be huge if elements in the XML page source have large `extras`. It could affect the performance of XML page source generation.
 includeA11yActionsInPageSource | boolean | Whether to include `actions` element attribute in the XML page source result. Its value consists of names of available accessibility actions from [getActionList](https://developer.android.com/reference/android/view/accessibility/AccessibilityNodeInfo#getActionList()), separated by a comma. The value could be huge if elements in the XML page source have a lot of actions and could affect the performance of XML page source generation.
 snapshotMaxDepth | int | The number of maximum depth for the source tree snapshot. The default value is `70`. This number should be in range [1, 500]. A part of the elements source tree might be lost if the value is too low. Also, StackOverflowError might be caused if the value is too high (Issues [12545](https://github.com/appium/appium/issues/12545), [12892](https://github.com/appium/appium/issues/12892)). The available driver version is `2.27.0` or higher.
-currentDisplayId | int | The id of the display that should be used when finding elements, taking screenshots, etc. It can be found in the output of `adb shell dumpsys display` (search for `mDisplayId`). The default value is [Display.DEFAULT_DISPLAY](https://developer.android.com/reference/android/view/Display#DEFAULT_DISPLAY). See the [Multi-Window Testing Guide](docs/android-multiwindow.md) for detailed information about windows, displays, and how this setting affects element location. Set this setting to `-1`
-in order to reset it.
-alwaysTraversableViewClasses | string | Allows to continue the tree traversal for user defined classes even though the node itself is invisible. The default logic for the UI tree traversal (controlled by the `allowInvisibleElements` setting) is to stop recursing when an invisible node is found. However, with certain Jetpack Compose classes (e.g. androidx.compose.ui.viewinterop.ViewFactoryHolder), it is possible that invisible parent nodes have visible child nodes.  See [Google issue \#354958193](https://issuetracker.google.com/issues/354958193) and [UIA2 server issue \#709](https://github.com/appium/appium-uiautomator2-server/issues/709) for more details. This setting only affects the XPath lookup and the page source buildup. You can provide a comma separated list of glob patterns, that will be used as an exemption list: `androidx.compose.ui.viewinterop.*,android.widget.ImageButton`.
+currentDisplayId | int | The id of the display that should be used when finding elements, taking screenshots, etc. It can be found in the output of `adb shell dumpsys display` (search for `mDisplayId`). The default value is [Display.DEFAULT_DISPLAY](https://developer.android.com/reference/android/view/Display#DEFAULT_DISPLAY). See the [Multi-Window Testing Guide](docs/android-multiwindow.md) for detailed information about windows, displays, and how this setting affects element location. Set this setting to `-1` in order to reset it.
 
 
 ## Platform-Specific Extensions
@@ -687,7 +686,7 @@ action | string | yes | The name or an integer code of the editor action to be e
 
 ### mobile: startScreenStreaming
 
-Starts device screen broadcast by creating MJPEG server. Multiple calls to this method have no effect unless the previous streaming session is stopped. This method only works if the `adb_screen_streaming` feature is enabled on the server side. It is also required that [GStreamer](https://gstreamer.freedesktop.org/) with `gst-plugins-base`, `gst-plugins-good` and `gst-plugins-bad` packages are installed and available in PATH on the server machine.
+Starts device screen broadcast by creating MJPEG server. Multiple calls to this method have no effect unless the previous streaming session is stopped. This method only works if the `adb_screen_streaming` feature is enabled on the server side. It is also required that [GStreamer](https://gstreamer.freedesktop.org/) with `gst-plugins-base`, `gst-plugins-good` and `gst-plugins-bad` packages are installed and available in PATH on the server machine. For the built-in device MJPEG stream (no GStreamer on host), see the [MJPEG guide](docs/mjpeg.md).
 
 #### Arguments
 
@@ -878,11 +877,27 @@ Verify whether an application is installed on the device under test.
 Name | Type | Required | Description | Example
 --- | --- | --- | --- | ---
 appId | string | yes | The identifier of the application package to be checked | `my.app.id`
-user | number or string | no | The user ID for which the package is installed.. The `current` user is used by default | 1006
+user | number or string | no | The user ID for which the package is installed. The `current` user is used by default | 1006
 
 #### Returned Result
 
 True or false
+
+### mobile: listApps
+
+Lists all installed packages on the Android device, optionally filtered by user.
+An exception will be thrown on devices running Android API below level 26.
+
+#### Arguments
+
+Name | Type | Required | Description | Example
+--- | --- | --- | --- | ---
+user | number or string | no | The user ID for which the package is installed. The `current` user is used by default | 1006
+
+#### Returned Result
+
+A map where keys are packageName and values are maps of platform-specific app properties since UIAutomator2 driver v7.0.0.
+UIAutomator2 driver v6.9.0 and v6.9.1 were a list of installed package names.
 
 ### mobile: queryAppState
 
@@ -1400,6 +1415,7 @@ keycode | number | yes | A valid Android key code. See [KeyEvent documentation](
 metastate | number | no | An integer in which each bit set to 1 represents a pressed meta key. See [KeyEvent documentation](https://developer.android.com/reference/android/view/KeyEvent) for more details. | 0x00000010 (which is META_ALT_LEFT_ON)
 flags | number | no | Flags for the particular key event. See [KeyEvent documentation](https://developer.android.com/reference/android/view/KeyEvent) for more details. | 0x00000001 (which is FLAG_WOKE_HERE)
 isLongPress | boolean | no | Whether to emulate long key press. `false` by default. | true
+source | number | no | Input device source. One or more [InputDevice.SOURCE_*](https://developer.android.com/reference/android/view/InputDevice) values (e.g. SOURCE_KEYBOARD, SOURCE_DPAD, SOURCE_GAMEPAD). Default is `257` or `0x101`, which maps to SOURCE_KEYBOARD. Multiple values can be combined using the logical OR operator. | 0x00000101 (SOURCE_KEYBOARD), 0x00000101 | 0x00000201 (SOURCE_KEYBOARD or SOURCE_DPAD)
 
 ### mobile: backgroundApp
 
@@ -1805,10 +1821,25 @@ Name | Type | Required | Description | Example
 --- | --- | --- | --- | ---
 action | string | yes | The action to execute on the NFC adapter. The following actions are supported: `enable`, `disable`. Calling the same action more than once is a noop. | disable
 
+### mobile: setStylusHandwriting
+
+Allows to control the stylus handwriting feature on the device under test. Available since driver version 7.1.0.
+This extension requires the `uiautomation2:set_stylus_handwriting` server command line feature to be enabled.
+
+Disabling the stylus handwriting will help to prevent blocking text input by the demo view.
+See [this ticket](https://github.com/appium/appium-uiautomator2-driver/issues/909) for more details.
+
+#### Arguments
+
+Name | Type | Required | Description | Example
+--- | --- | --- | --- | ---
+enabled | boolean | yes | Whether to enable or disable the stylus handwriting feature. | true
+
 ## Applications Management
 
 UiAutomator2 driver supports Appium endpoints for applications management:
 - Check if app is installed ([mobile: isAppInstalled](#mobile-isappinstalled))
+- Lists all installed packages ([mobile: listApps](#mobile-listapps))
 - Install/upgrade app ([mobile: installApp](#mobile-installapp))
 - Activate app ([mobile: activateApp](#mobile-activateapp))
     - Since UIAutomator2 driver v2.2.0, the server calls `am start`/`am start-activity` to start the application on devices with API level 24+. [monkey](https://developer.android.com/studio/test/other-testing-tools/monkey) tool is called on devices below API level 24.
@@ -2036,6 +2067,7 @@ In case of _xpath_ locators you could try to change values of the following sett
 2. [ignoreUnimportantViews](#settings-api)
 3. [enableMultiWindows](#settings-api)
 4. [snapshotMaxDepth](#settings-api)
+5. [alwaysTraversableViewClasses](#settings-api) for Jetpack Compose
 
 By default, the first setting is set to `false`, which hides
 elements that are not visible from the page source and from the xpath location. Changing the setting value
@@ -2212,3 +2244,4 @@ npm run e2e-test:commands:general
 npm run e2e-test:commands:keyboard
 npm run e2e-test:driver
 ```
+

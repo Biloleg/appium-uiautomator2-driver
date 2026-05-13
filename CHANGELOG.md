@@ -1,3 +1,131 @@
+## [7.2.3](https://github.com/appium/appium-uiautomator2-driver/compare/v7.2.2...v7.2.3) (2026-05-11)
+
+### Miscellaneous Chores
+
+* **deps:** bump appium-uiautomator2-server from 9.11.2 to 10.0.1 ([#999](https://github.com/appium/appium-uiautomator2-driver/issues/999)) ([396be93](https://github.com/appium/appium-uiautomator2-driver/commit/396be93562fd24518a4e43c402daf4aa81640cff))
+
+## [7.2.2](https://github.com/appium/appium-uiautomator2-driver/compare/v7.2.1...v7.2.2) (2026-05-07)
+
+### Miscellaneous Chores
+
+* add new line in readme to kick a new release with the latest deps ([66a5302](https://github.com/appium/appium-uiautomator2-driver/commit/66a53027cbbbd7b4ab1335f58c43ecc38e81a0c7))
+
+## [7.2.1](https://github.com/appium/appium-uiautomator2-driver/compare/v7.2.0...v7.2.1) (2026-05-06)
+
+### Miscellaneous Chores
+
+* **deps-dev:** bump sinon from 21.1.2 to 22.0.0 ([#997](https://github.com/appium/appium-uiautomator2-driver/issues/997)) ([2ba9f36](https://github.com/appium/appium-uiautomator2-driver/commit/2ba9f36a05f6f56b8a951055fcfaa0320a67832b))
+
+## [7.2.0](https://github.com/appium/appium-uiautomator2-driver/compare/v7.1.2...v7.2.0) (2026-05-03)
+
+### Features
+
+* Ditch bluebird ([#996](https://github.com/appium/appium-uiautomator2-driver/issues/996)) ([68a290e](https://github.com/appium/appium-uiautomator2-driver/commit/68a290e08967430665077c0fa7aef75cc3a49323))
+
+## [7.1.2](https://github.com/appium/appium-uiautomator2-driver/compare/v7.1.1...v7.1.2) (2026-04-10)
+
+### Miscellaneous Chores
+
+* **deps-dev:** bump typescript from 5.9.3 to 6.0.2 ([#991](https://github.com/appium/appium-uiautomator2-driver/issues/991)) ([5fbcd6f](https://github.com/appium/appium-uiautomator2-driver/commit/5fbcd6f4d1d8bb3cc9d61208707eccd627b14042))
+
+## [7.1.1](https://github.com/appium/appium-uiautomator2-driver/compare/v7.1.0...v7.1.1) (2026-04-09)
+
+### Bug Fixes
+
+* build ([#994](https://github.com/appium/appium-uiautomator2-driver/issues/994)) ([061384e](https://github.com/appium/appium-uiautomator2-driver/commit/061384e962887d0af211deab694d8acad988829c))
+
+### Miscellaneous Chores
+
+* Bump android driver ([c4f0ac1](https://github.com/appium/appium-uiautomator2-driver/commit/c4f0ac1979878991aa9d4b5b9414a3de4c73b0ef))
+
+## [7.1.0](https://github.com/appium/appium-uiautomator2-driver/compare/v7.0.0...v7.1.0) (2026-03-24)
+
+### Features
+
+* add mobile: setStylusHandwriting behind a security flag ([#990](https://github.com/appium/appium-uiautomator2-driver/issues/990)) ([0c42ef6](https://github.com/appium/appium-uiautomator2-driver/commit/0c42ef6230cb0889f3e08789c7bcff92031dafc0))
+
+## [7.0.0](https://github.com/appium/appium-uiautomator2-driver/compare/v6.9.3...v7.0.0) (2026-02-20)
+
+### ⚠ BREAKING CHANGES
+
+* modify the mobile:listApps style to follow XCUITest driver format
+
+### Bug Fixes
+
+* modify the format of listApps to follow xcuitest format ([#986](https://github.com/appium/appium-uiautomator2-driver/issues/986)) ([f163507](https://github.com/appium/appium-uiautomator2-driver/commit/f1635079e3c495e7f5b68850781f907ed7fccae6))
+
+## [6.9.3](https://github.com/appium/appium-uiautomator2-driver/compare/v6.9.2...v6.9.3) (2026-02-20)
+
+### Reverts
+
+* Revert "fix: modify the format of listApps to follow xcuitest format ([#983](https://github.com/appium/appium-uiautomator2-driver/issues/983))" ([#985](https://github.com/appium/appium-uiautomator2-driver/issues/985)) ([d5574c9](https://github.com/appium/appium-uiautomator2-driver/commit/d5574c9b522f1adf5cabdc3baed73bfbac1582cb))
+
+## [6.9.2](https://github.com/appium/appium-uiautomator2-driver/compare/v6.9.1...v6.9.2) (2026-02-20)
+
+### Bug Fixes
+
+* modify the format of listApps to follow xcuitest format ([#983](https://github.com/appium/appium-uiautomator2-driver/issues/983)) ([d1e3528](https://github.com/appium/appium-uiautomator2-driver/commit/d1e35280ba392de0e491bbe3f5143ec3adefaebe))
+
+## [6.9.1](https://github.com/appium/appium-uiautomator2-driver/compare/v6.9.0...v6.9.1) (2026-02-19)
+
+### Miscellaneous Chores
+
+* Set minimum axios dependency version to 1.13.5 ([f05897e](https://github.com/appium/appium-uiautomator2-driver/commit/f05897ee49bc23c9f0789b86b17eed3d5f934cb5))
+
+## [6.9.0](https://github.com/appium/appium-uiautomator2-driver/compare/v6.8.2...v6.9.0) (2026-02-18)
+
+### Features
+
+* add mobile:listApps ([#982](https://github.com/appium/appium-uiautomator2-driver/issues/982)) ([b98268c](https://github.com/appium/appium-uiautomator2-driver/commit/b98268cfdb8cfd6bf1c8230576af732a2f343ebc))
+
+## [6.8.2](https://github.com/appium/appium-uiautomator2-driver/compare/v6.8.1...v6.8.2) (2026-02-16)
+
+### Bug Fixes
+
+* format ([#981](https://github.com/appium/appium-uiautomator2-driver/issues/981)) ([d5bcefc](https://github.com/appium/appium-uiautomator2-driver/commit/d5bcefcfcf746eeadda7a249ac2ccdb03d58ccc8))
+
+## [6.8.1](https://github.com/appium/appium-uiautomator2-driver/compare/v6.8.0...v6.8.1) (2026-02-13)
+
+### Miscellaneous Chores
+
+* Update appium-uiautomator2-server version to 9.11.1 ([87016a1](https://github.com/appium/appium-uiautomator2-driver/commit/87016a172143346a284f3a1ff2c47a8e7dc7d20b))
+
+## [6.8.0](https://github.com/appium/appium-uiautomator2-driver/compare/v6.7.15...v6.8.0) (2026-02-02)
+
+### Features
+
+* Add `source` param to `mobile: pressKey` extension method ([#979](https://github.com/appium/appium-uiautomator2-driver/issues/979)) ([b1d0b21](https://github.com/appium/appium-uiautomator2-driver/commit/b1d0b2121f32dcfe561abfa4db0f627155c36274))
+
+## [6.7.15](https://github.com/appium/appium-uiautomator2-driver/compare/v6.7.14...v6.7.15) (2026-01-30)
+
+### Miscellaneous Chores
+
+* Update appium-uiautomator2-server ([77f970c](https://github.com/appium/appium-uiautomator2-driver/commit/77f970c96d97c998792bb6586faa29790cb673f7))
+
+## [6.7.14](https://github.com/appium/appium-uiautomator2-driver/compare/v6.7.13...v6.7.14) (2026-01-30)
+
+### Miscellaneous Chores
+
+* Update appium-uiautomator2-server version ([a06f196](https://github.com/appium/appium-uiautomator2-driver/commit/a06f196b22c326e7f23c8795fb270f6430756b96))
+
+## [6.7.13](https://github.com/appium/appium-uiautomator2-driver/compare/v6.7.12...v6.7.13) (2026-01-28)
+
+### Miscellaneous Chores
+
+* **deps-dev:** bump @appium/eslint-config-appium-ts from 2.0.5 to 3.0.0 ([#978](https://github.com/appium/appium-uiautomator2-driver/issues/978)) ([09109a9](https://github.com/appium/appium-uiautomator2-driver/commit/09109a9f380d754551009498949197f256c117c1))
+
+## [6.7.12](https://github.com/appium/appium-uiautomator2-driver/compare/v6.7.11...v6.7.12) (2026-01-27)
+
+### Miscellaneous Chores
+
+* **deps:** bump asyncbox from 4.1.1 to 6.0.1 ([#977](https://github.com/appium/appium-uiautomator2-driver/issues/977)) ([042c71b](https://github.com/appium/appium-uiautomator2-driver/commit/042c71b3afff181eacf1cd16c76a7f547221a605))
+
+## [6.7.11](https://github.com/appium/appium-uiautomator2-driver/compare/v6.7.10...v6.7.11) (2026-01-23)
+
+### Miscellaneous Chores
+
+* Exclude tests from published dist ([4f2cf50](https://github.com/appium/appium-uiautomator2-driver/commit/4f2cf50716c87956d9b8654cca453dbbfb63b640))
+
 ## [6.7.10](https://github.com/appium/appium-uiautomator2-driver/compare/v6.7.9...v6.7.10) (2026-01-16)
 
 ### Miscellaneous Chores
